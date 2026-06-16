@@ -1,0 +1,168 @@
+:root {
+  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  /* Fettle candy-bright palette */
+  --grape: #7C3AF6;
+  --grape-deep: #5B22C9;
+  --grape-light: #9B5CFF;
+  --ink: #241544;
+  --muted: #9B91B8;
+  --mint: #18C98A;
+  --tangerine: #FF8A1E;
+  --lemon: #FFC53D;
+  --coral: #FF4D6D;
+  --pink: #FF6CB6;
+  --sky: #2BB7F2;
+  --lilac-bg: #F4EFFF;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-family: var(--font-body);
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Hide scrollbars inside the app — matches the prototype's chromeless scroll */
+.fettle-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+.fettle-scroll {
+  scrollbar-width: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+/* ── Animations (ported from the design) ───────────────────────── */
+@keyframes pep-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-9px);
+  }
+}
+@keyframes pep-pop {
+  0% {
+    transform: scale(0.93);
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes pep-confetti {
+  0% {
+    transform: translateY(-20px) rotate(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(820px) rotate(680deg);
+    opacity: 1;
+  }
+}
+@keyframes pep-scan {
+  0% {
+    top: 6%;
+  }
+  100% {
+    top: 88%;
+  }
+}
+@keyframes pep-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes pep-toast {
+  0% {
+    transform: translate(-50%, 16px);
+  }
+  12%,
+  100% {
+    transform: translate(-50%, 0);
+  }
+}
+@keyframes pep-tagpop {
+  0% {
+    transform: scale(0.6);
+  }
+  70% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes pep-sheet {
+  0% {
+    transform: translateY(100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+@keyframes pep-fade {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@keyframes pep-cheer {
+  0% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.35);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Pressable button feedback (replaces the prototype's style-active) */
+.pressable {
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+.pressable:active {
+  transform: translateY(var(--press-y, 2px));
+  box-shadow: var(--press-shadow, none);
+}
+
+/* Page background that frames the phone on larger screens */
+.fettle-stage {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100%;
+  background: radial-gradient(circle at 18% 8%, #fbebff, #efe6ff 38%, #e5f4ff 100%);
+  padding: 32px;
+}
+
+/* On phones, let the app fill the whole viewport with no frame padding */
+@media (max-width: 640px) {
+  .fettle-stage {
+    padding: 0;
+    background: var(--lilac-bg);
+  }
+}
