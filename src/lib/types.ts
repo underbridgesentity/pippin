@@ -66,7 +66,24 @@ export type ActivityEntry = {
   kcalBurned: number
 }
 
-export type FeedKind = 'meal' | 'activity' | 'badge' | 'challenge' | 'level'
+export type FeedKind = 'meal' | 'activity' | 'badge' | 'challenge' | 'level' | 'post'
+
+/** The kind of thing someone shares with the community. */
+export type PostType = 'update' | 'tip' | 'question' | 'win'
+
+export type ReactionKind = 'cheer' | 'fire' | 'strong' | 'love'
+
+export type Comment = {
+  id: string
+  at: number
+  author: string // 'me' or a member id
+  name: string
+  initial: string
+  avatar: string
+  text: string
+  /** marked as a helpful tip rather than a plain reply */
+  tip?: boolean
+}
 
 export type FeedEntry = {
   id: string
@@ -82,6 +99,12 @@ export type FeedEntry = {
   badge?: string | null
   photo?: string | null
   baseCheers: number
+  /** for kind === 'post' */
+  postType?: PostType
+  text?: string
+  /** seeded reactions/comments so the community feels alive from day one */
+  baseReactions?: Partial<Record<ReactionKind, number>>
+  seedComments?: Comment[]
 }
 
 export type UserState = {
@@ -96,9 +119,15 @@ export type UserState = {
   challengeJoinedOn: Record<string, string>
   /** badgeId -> unlock timestamp */
   badges: Record<string, number>
-  /** feedEntryId -> cheered */
+  /** feedEntryId -> cheered (legacy; superseded by reactions) */
   cheers: Record<string, boolean>
-  /** the user's own feed events */
+  /** feedEntryId -> my reaction */
+  reactions: Record<string, ReactionKind>
+  /** feedEntryId -> comments I (and simulated community responses) have added */
+  comments: Record<string, Comment[]>
+  /** cumulative cheers/encouragement received from the community */
+  kudosReceived: number
+  /** the user's own feed events (auto + community posts they author) */
   feed: FeedEntry[]
   /** ISO day the daily quest bonus was last claimed */
   questClaimedOn?: string

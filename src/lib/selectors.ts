@@ -3,7 +3,7 @@
 // here from real logged data. No screen reads raw counters.
 
 import { dayKey, num, todayKey } from './format'
-import { CHALLENGE_BY_ID, MEMBERS, type SeedMember } from './seed'
+import { CHALLENGE_BY_ID, MEMBERS, communityFeed, type SeedMember } from './seed'
 import {
   BADGES,
   computeStreak,
@@ -13,10 +13,39 @@ import {
   stageForLevel,
   xpToNextStage,
 } from './gamification'
-import type { Account, ActivityEntry, Challenge, MealEntry, UserState } from './types'
+import type { Account, ActivityEntry, Challenge, FeedEntry, MealEntry, ReactionKind, UserState } from './types'
 
 export const QUEST_TARGET = 3
 const WEEK = 7 * 86_400_000
+
+export type DecoratedFeed = FeedEntry & {
+  reactionCounts: Partial<Record<ReactionKind, number>>
+  totalReactions: number
+  myReaction: ReactionKind | null
+  comments: ReturnType<typeof mergeComments>
+  commentCount: number
+}
+
+function mergeComments(entry: FeedEntry, s: UserState) {
+  const seed = entry.seedComments ?? []
+  const mine = s.comments[entry.id] ?? []
+  return [...seed, ...mine].sort((a, b) => a.at - b.at)
+}
+
+export function decorateEntry(entry: FeedEntry, s: UserState): DecoratedFeed {
+  const myReaction = s.reactions[entry.id] ?? (s.cheers[entry.id] ? ('cheer' as ReactionKind) : null)
+  const counts: Partial<Record<ReactionKind, number>> = { ...(entry.baseReactions ?? {}) }
+  if (myReaction) counts[myReaction] = (counts[myReaction] ?? 0) + 1
+  const totalReactions = Object.values(counts).reduce((t, n) => t + (n ?? 0), 0)
+  const comments = mergeComments(entry, s)
+  return { ...entry, reactionCounts: counts, totalReactions, myReaction, comments, commentCount: comments.length }
+}
+
+/** The merged, decorated community feed: the user's own events + ambient community. */
+export function buildFeed(s: UserState, now = Date.now()): DecoratedFeed[] {
+  const merged = [...s.feed, ...communityFeed(now)].sort((a, b) => b.at - a.at)
+  return merged.map((e) => decorateEntry(e, s))
+}
 
 export type LeaderRow = {
   rank: number
@@ -84,6 +113,12 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
     .filter(Boolean)
     .map((c) => challengeProgress(c, s, now))
 
+  const kudosGiven =
+    Object.keys(s.reactions).length +
+    Object.keys(s.cheers).filter((k) => s.cheers[k] && !s.reactions[k]).length +
+    Object.values(s.comments).flat().filter((com) => com.author === 'me').length
+  const kudosReceived = s.kudosReceived
+
   return {
     now,
     account,
@@ -126,6 +161,8 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
     myRank,
     joinedChallenges,
     winsCount: countWins(s),
+    kudosGiven,
+    kudosReceived,
   }
 }
 

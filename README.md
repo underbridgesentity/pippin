@@ -55,6 +55,13 @@ Everything below is real, computed from what you log, and persisted across reloa
   against steps / meals / activities / days.
 - **Leaderboard** — seeded community members + you, ranked by weekly XP; you climb
   as you log.
+- **Community** — Fettle is a *social* wellness platform. Share **updates, tips,
+  questions and wins**; the squad reacts (👏🔥💪❤️) and replies with encouragement
+  and tips. Visit **member profiles** and cheer them on, filter the feed (Tips /
+  Questions / Wins), and get a **notifications** feed of support received. Your
+  profile celebrates **cheers given & received**, not just personal metrics. (In
+  local mode, the community's responses to your posts are simulated; with Supabase
+  they're real people.)
 - **Settings** — edit profile, change daily targets and goal, log out.
 
 ## Architecture
@@ -70,12 +77,13 @@ src/
     store.tsx            # reactive store (useSyncExternalStore) + all actions
     selectors.ts         # pure derived views (every displayed number)
     gamification.ts      # XP / levels / stages / streaks / badge rules
+    social.ts            # reaction + post-type definitions
     foods.ts             # bundled nutrition database + search
-    seed.ts              # seeded community (members, challenges, ambient feed)
-    hooks.ts             # useDerived()
+    seed.ts              # seeded community (members, supportive posts, replies)
+    hooks.ts             # useDerived(), useFeed()
     format.ts, image.ts  # helpers (dates/format, photo compression)
   components/            # IOSDevice, TabBar, Toast, Sheet, Ring, ProgressBar, Avatar, Mascot, Confetti
-  screens/               # Auth, Welcome, Home, Quests, Squad, Profile, Capture, AddActivity, Settings
+  screens/               # Auth, Welcome, Home, Quests, Squad, Profile, Capture, AddActivity, Settings, Social (comments/compose/member/notifications)
 ```
 
 **Going multi-user** is already wired: add a free Supabase project's URL + anon

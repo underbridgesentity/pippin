@@ -79,9 +79,25 @@ export function defaultState(goal: Goal, now: number): UserState {
     challengeJoinedOn: {},
     badges: {},
     cheers: {},
+    reactions: {},
+    comments: {},
+    kudosReceived: 0,
     feed: [],
     welcomed: false,
     onboardedAt: now,
+  }
+}
+
+/** Fill in any fields missing from older saved state, so upgrades don't crash. */
+export function normalize(s: UserState): UserState {
+  return {
+    ...s,
+    cheers: s.cheers ?? {},
+    reactions: s.reactions ?? {},
+    comments: s.comments ?? {},
+    kudosReceived: s.kudosReceived ?? 0,
+    feed: s.feed ?? [],
+    badges: s.badges ?? {},
   }
 }
 

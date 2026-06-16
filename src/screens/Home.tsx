@@ -1,27 +1,53 @@
-import { useMemo } from 'react'
+import { useState } from 'react'
 import { Ring } from '../components/Ring'
 import { ProgressBar } from '../components/ProgressBar'
 import { Avatar } from '../components/Avatar'
 import { Mascot } from '../components/Mascot'
 import { useStore, actions } from '../lib/store'
-import { useDerived } from '../lib/hooks'
-import { communityFeed } from '../lib/seed'
+import { useDerived, useFeed } from '../lib/hooks'
+import { REACTION_BY_KIND } from '../lib/social'
 import { firstName, greeting, longDate, num, relativeTime } from '../lib/format'
-import type { FeedEntry, MealEntry } from '../lib/types'
+import type { DecoratedFeed } from '../lib/selectors'
+import type { MealEntry, ReactionKind } from '../lib/types'
 
-export function Home({ onOpenCapture, onAddActivity }: { onOpenCapture: () => void; onAddActivity: () => void }) {
+type Filter = 'all' | 'tip' | 'question' | 'win'
+const FILTERS: { id: Filter; label: string }[] = [
+  { id: 'all', label: 'All' },
+  { id: 'tip', label: '💡 Tips' },
+  { id: 'question', label: '🙋 Questions' },
+  { id: 'win', label: '🎉 Wins' },
+]
+
+export function Home({
+  onOpenCapture,
+  onAddActivity,
+  onCompose,
+  onOpenPost,
+  onOpenMember,
+  onOpenNotifications,
+}: {
+  onOpenCapture: () => void
+  onAddActivity: () => void
+  onCompose: () => void
+  onOpenPost: (id: string) => void
+  onOpenMember: (id: string) => void
+  onOpenNotifications: () => void
+}) {
   const { account, data } = useStore()
   const d = useDerived()
+  const feed = useFeed()
+  const [filter, setFilter] = useState<Filter>('all')
   const now = d?.now ?? Date.now()
 
-  const feed = useMemo<(FeedEntry & { cheered: boolean; cheerCount: number })[]>(() => {
-    if (!data) return []
-    const mine = data.feed
-    const merged = [...mine, ...communityFeed(now)].sort((a, b) => b.at - a.at).slice(0, 14)
-    return merged.map((f) => ({ ...f, cheered: !!data.cheers[f.id], cheerCount: f.baseCheers + (data.cheers[f.id] ? 1 : 0) }))
-  }, [data, now])
-
   if (!account || !data || !d) return null
+
+  const shown = feed
+    .filter((p) => {
+      if (filter === 'all') return true
+      if (filter === 'win') return p.postType === 'win' || p.kind === 'badge' || p.kind === 'level'
+      return p.postType === filter
+    })
+    .slice(0, 16)
 
   return (
     <div data-screen-label="Home" style={{ padding: '56px 18px 116px' }}>
@@ -29,16 +55,20 @@ export function Home({ onOpenCapture, onAddActivity }: { onOpenCapture: () => vo
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
         <div>
           <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>{longDate(now)}</div>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 26, lineHeight: 1.05, color: '#241544' }}>
-            {greeting(now)}, {firstName(account.name)}!
-          </div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 26, lineHeight: 1.05, color: '#241544' }}>{greeting(now)}, {firstName(account.name)}!</div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', borderRadius: 16, padding: '8px 13px', boxShadow: '0 4px 12px rgba(120,60,180,.08)' }}>
-          <svg width="20" height="22" viewBox="0 0 24 24">
-            <path d="M12 3c2.4 3.2 4.4 5 4.4 8.1a4.4 4.4 0 1 1-8.8 0c0-1.3.5-2.4 1.2-3.3.3 1.1 1 1.8 1.9 1.8 1 0 1.3-.9 1.3-2.4 0-1.7-.4-2.9-1.4-4.2Z" fill={d.streak > 0 ? '#FF8A1E' : '#D9CEF0'} />
-            <path d="M12 9.6c1 1.4 1.9 2.3 1.9 3.7a1.9 1.9 0 1 1-3.8 0c0-.9.5-1.6 1.1-2.2.1.5.4.8.8.8.4 0 .6-.4.6-1 0-.5-.2-.8-.6-1.3Z" fill={d.streak > 0 ? '#FFC53D' : '#EBE3F8'} />
-          </svg>
-          <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: d.streak > 0 ? '#FF8A1E' : '#B6AEC9' }}>{d.streak}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button onClick={onOpenNotifications} aria-label="Notifications" style={{ position: 'relative', width: 42, height: 42, borderRadius: 14, background: '#fff', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(120,60,180,.08)' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#7C3AF6" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0" /></svg>
+            {d.kudosReceived > 0 && <span style={{ position: 'absolute', top: 8, right: 9, width: 9, height: 9, borderRadius: '50%', background: '#FF4D6D', border: '2px solid #fff' }} />}
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, background: '#fff', borderRadius: 16, padding: '9px 13px', boxShadow: '0 4px 12px rgba(120,60,180,.08)' }}>
+            <svg width="20" height="22" viewBox="0 0 24 24">
+              <path d="M12 3c2.4 3.2 4.4 5 4.4 8.1a4.4 4.4 0 1 1-8.8 0c0-1.3.5-2.4 1.2-3.3.3 1.1 1 1.8 1.9 1.8 1 0 1.3-.9 1.3-2.4 0-1.7-.4-2.9-1.4-4.2Z" fill={d.streak > 0 ? '#FF8A1E' : '#D9CEF0'} />
+              <path d="M12 9.6c1 1.4 1.9 2.3 1.9 3.7a1.9 1.9 0 1 1-3.8 0c0-.9.5-1.6 1.1-2.2.1.5.4.8.8.8.4 0 .6-.4.6-1 0-.5-.2-.8-.6-1.3Z" fill={d.streak > 0 ? '#FFC53D' : '#EBE3F8'} />
+            </svg>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: d.streak > 0 ? '#FF8A1E' : '#B6AEC9' }}>{d.streak}</span>
+          </div>
         </div>
       </div>
 
@@ -87,16 +117,12 @@ export function Home({ onOpenCapture, onAddActivity }: { onOpenCapture: () => vo
           <svg width="16" height="16" viewBox="0 0 24 24" fill="#FFC53D"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
           <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff', letterSpacing: '.4px', textTransform: 'uppercase' }}>Daily Quest</span>
         </div>
-        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#fff', marginBottom: 10 }}>
-          Snap {d.quest.target} meals today <span style={{ opacity: 0.8 }}>· {d.quest.done}/{d.quest.target}</span>
-        </div>
+        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#fff', marginBottom: 10 }}>Snap {d.quest.target} meals today <span style={{ opacity: 0.8 }}>· {d.quest.done}/{d.quest.target}</span></div>
         <ProgressBar pct={d.quest.pct} fill="linear-gradient(90deg,#FFC53D,#FF8A1E)" track="rgba(255,255,255,.25)" height={10} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 8 }}>
           <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#FFE6B8' }}>Reward: +50 XP &amp; a Streak Shield</span>
           {d.quest.claimable && (
-            <button onClick={() => actions.claimQuest()} className="pressable" style={{ background: '#FFC53D', color: '#241544', border: 'none', borderRadius: 12, padding: '7px 14px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', boxShadow: '0 3px 0 #D9A21F', ['--press-shadow' as string]: '0 1px 0 #D9A21F' }}>
-              Claim
-            </button>
+            <button onClick={() => actions.claimQuest()} className="pressable" style={{ background: '#FFC53D', color: '#241544', border: 'none', borderRadius: 12, padding: '7px 14px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', boxShadow: '0 3px 0 #D9A21F', ['--press-shadow' as string]: '0 1px 0 #D9A21F' }}>Claim</button>
           )}
           {d.quest.claimed && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff' }}>Claimed ✓</span>}
         </div>
@@ -121,14 +147,33 @@ export function Home({ onOpenCapture, onAddActivity }: { onOpenCapture: () => vo
         </div>
       )}
 
-      {/* feed */}
+      {/* community */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 2px' }}>
-        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Squad activity</span>
-        <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#7C3AF6' }}>See all</span>
+        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Community</span>
+        <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#18C98A', background: '#E2F8EF', padding: '4px 10px', borderRadius: 12 }}>{d.kudosGiven} cheers given</span>
       </div>
-      {feed.map((f) => (
-        <FeedCard key={f.id} f={f} now={now} onCheer={() => actions.toggleCheer(f.id)} />
-      ))}
+
+      {/* composer prompt */}
+      <button onClick={onCompose} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 11, background: '#fff', border: 'none', borderRadius: 20, padding: '13px 14px', marginBottom: 12, cursor: 'pointer', boxShadow: '0 5px 16px rgba(120,60,180,.06)' }}>
+        <Avatar initial={(account.name[0] || 'Y').toUpperCase()} gradient={account.avatar} size={40} radius={13} />
+        <span style={{ flex: 1, textAlign: 'left', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Share a win, a tip, or a question…</span>
+        <span style={{ width: 36, height: 36, borderRadius: 12, background: 'linear-gradient(135deg,#FF6CB6,#FF4D6D)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5Z" /></svg>
+        </span>
+      </button>
+
+      {/* filters */}
+      <div className="fettle-scroll" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
+        {FILTERS.map((f) => (
+          <button key={f.id} onClick={() => setFilter(f.id)} style={{ flex: 'none', background: filter === f.id ? '#7C3AF6' : '#fff', color: filter === f.id ? '#fff' : '#7A719B', border: filter === f.id ? 'none' : '2px solid #ECE6FA', borderRadius: 14, padding: '8px 14px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{f.label}</button>
+        ))}
+      </div>
+
+      {shown.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '24px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Nothing here yet — be the first to share.</div>
+      ) : (
+        shown.map((p) => <FeedCard key={p.id} post={p} now={now} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />)
+      )}
     </div>
   )
 }
@@ -169,59 +214,92 @@ function MealRow({ meal, now, onDelete }: { meal: MealEntry; now: number; onDele
   )
 }
 
-function FeedCard({ f, now, onCheer }: { f: FeedEntry & { cheered: boolean; cheerCount: number }; now: number; onCheer: () => void }) {
+function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed; now: number; onOpenPost: (id: string) => void; onOpenMember: (id: string) => void }) {
+  const isMine = post.author === 'me'
+  const presentReactions = (Object.keys(post.reactionCounts) as ReactionKind[]).filter((k) => (post.reactionCounts[k] ?? 0) > 0)
+  const typeTag = post.postType ? { tip: '💡 Tip', question: '🙋 Question', win: '🎉 Win', update: '✨ Update' }[post.postType] : null
+
   return (
     <div style={{ background: '#fff', borderRadius: 24, padding: 14, marginBottom: 12, boxShadow: '0 5px 16px rgba(120,60,180,.06)' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: f.photo || f.badge || f.stat ? 10 : 4 }}>
-        <Avatar initial={f.initial} gradient={f.avatar} size={44} radius={15} />
+      <div style={{ display: 'flex', alignItems: 'center', gap: 11, marginBottom: 10 }}>
+        <button onClick={() => !isMine && onOpenMember(post.author)} style={{ border: 'none', background: 'none', padding: 0, cursor: isMine ? 'default' : 'pointer', flex: 'none' }}>
+          <Avatar initial={post.initial} gradient={post.avatar} size={44} radius={15} />
+        </button>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{f.name}{f.author === 'me' ? ' (You)' : ''}</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>{f.action}</div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{post.name}{isMine ? ' (You)' : ''}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>{post.action}</div>
         </div>
-        <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#C3BBD6', flex: 'none' }}>{relativeTime(f.at, now)}</span>
+        {typeTag && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#7A719B', background: '#F4EFFF', padding: '4px 9px', borderRadius: 10, flex: 'none' }}>{typeTag}</span>}
+        <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#C3BBD6', flex: 'none' }}>{relativeTime(post.at, now)}</span>
       </div>
 
-      {f.photo && (
-        f.photo.startsWith('data:') ? (
-          <img src={f.photo} alt="" style={{ width: '100%', height: 148, objectFit: 'cover', borderRadius: 18, marginBottom: 10 }} />
-        ) : (
-          <div style={{ position: 'relative', height: 148, borderRadius: 18, background: f.photo, marginBottom: 10, overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', left: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(36,21,68,.78)', backdropFilter: 'blur(6px)', padding: '6px 11px', borderRadius: 14 }}>
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="#FFC53D"><path d="M12 2l2 5 5 .5-4 3.5 1 5-4-2.5L8 19l1-5-4-3.5 5-.5 2-5Z" /></svg>
-              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff' }}>Fettle counted it</span>
+      <div onClick={() => onOpenPost(post.id)} style={{ cursor: 'pointer' }}>
+        {post.text && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14.5, color: '#3A2B5C', lineHeight: 1.45, marginBottom: 10 }}>{post.text}</div>}
+
+        {post.photo && (
+          post.photo.startsWith('data:') ? (
+            <img src={post.photo} alt="" style={{ width: '100%', height: 148, objectFit: 'cover', borderRadius: 18, marginBottom: 10 }} />
+          ) : (
+            <div style={{ position: 'relative', height: 148, borderRadius: 18, background: post.photo, marginBottom: 10, overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', left: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(36,21,68,.78)', backdropFilter: 'blur(6px)', padding: '6px 11px', borderRadius: 14 }}>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="#FFC53D"><path d="M12 2l2 5 5 .5-4 3.5 1 5-4-2.5L8 19l1-5-4-3.5 5-.5 2-5Z" /></svg>
+                <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff' }}>Fettle counted it</span>
+              </div>
+            </div>
+          )
+        )}
+
+        {post.badge && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#F4EFFF', borderRadius: 16, padding: 12, marginBottom: 10 }}>
+            <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg,#FFC53D,#FF8A1E)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', boxShadow: '0 4px 10px rgba(255,138,30,.35)' }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
+            </div>
+            <div>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px' }}>New badge</div>
+              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544' }}>{post.badge}</div>
             </div>
           </div>
-        )
-      )}
+        )}
 
-      {f.badge && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#F4EFFF', borderRadius: 16, padding: 12, marginBottom: 10 }}>
-          <div style={{ width: 46, height: 46, borderRadius: '50%', background: 'linear-gradient(135deg,#FFC53D,#FF8A1E)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', boxShadow: '0 4px 10px rgba(255,138,30,.35)' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
+        {post.stat && !post.photo && (
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#F4EFFF', borderRadius: 14, padding: '7px 12px', marginBottom: 10 }}>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#5B22C9' }}>{post.stat}</span>
           </div>
-          <div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#9B91B8', textTransform: 'uppercase', letterSpacing: '.4px' }}>New badge</div>
-            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544' }}>{f.badge}</div>
-          </div>
-        </div>
-      )}
+        )}
+      </div>
 
-      {f.stat && !f.photo && (
-        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: '#F4EFFF', borderRadius: 14, padding: '7px 12px', marginBottom: 10 }}>
-          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#5B22C9' }}>{f.stat}</span>
+      {/* reaction summary */}
+      {(post.totalReactions > 0 || post.commentCount > 0) && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '2px 2px 8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            {presentReactions.slice(0, 3).map((k) => (
+              <span key={k} style={{ fontSize: 13 }}>{REACTION_BY_KIND[k].emoji}</span>
+            ))}
+            {post.totalReactions > 0 && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#9B91B8' }}>{post.totalReactions}</span>}
+          </div>
+          {post.commentCount > 0 && (
+            <button onClick={() => onOpenPost(post.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#9B91B8' }}>{post.commentCount} {post.commentCount === 1 ? 'comment' : 'comments'}</button>
+          )}
         </div>
       )}
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, borderTop: '1px solid #F2ECFB', paddingTop: 10 }}>
-        <button onClick={onCheer} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px' }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill={f.cheered ? '#FF4D6D' : 'none'} stroke={f.cheered ? '#FF4D6D' : '#B6AEC9'} strokeWidth="2" style={{ animation: f.cheered ? 'pep-cheer .35s ease' : undefined }}>
-            <path d="M12 20S4 14.5 4 9a3.6 3.6 0 0 1 8-2 3.6 3.6 0 0 1 8 2c0 5.5-8 11-8 11Z" />
-          </svg>
-          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: f.cheered ? '#FF4D6D' : '#B6AEC9' }}>{f.cheerCount}</span>
+        <button onClick={() => actions.react(post.id, 'cheer')} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: post.myReaction ? '#FFF4E6' : 'none', border: 'none', borderRadius: 12, padding: '8px 6px', cursor: 'pointer' }}>
+          {post.myReaction ? (
+            <>
+              <span style={{ fontSize: 17, animation: 'pep-cheer .35s ease' }}>{REACTION_BY_KIND[post.myReaction].emoji}</span>
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: REACTION_BY_KIND[post.myReaction].color }}>{REACTION_BY_KIND[post.myReaction].label}</span>
+            </>
+          ) : (
+            <>
+              <span style={{ fontSize: 17, filter: 'grayscale(1)', opacity: 0.7 }}>👏</span>
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#B6AEC9' }}>Cheer</span>
+            </>
+          )}
         </button>
-        <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: '4px 6px' }}>
+        <button onClick={() => onOpenPost(post.id)} style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: '8px 6px' }}>
           <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#B6AEC9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12 7.6L3 21l1.9-5.6A8.4 8.4 0 1 1 21 11.5Z" /></svg>
-          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#B6AEC9' }}>Cheer on</span>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#B6AEC9' }}>{isMine ? 'Replies' : 'Encourage'}</span>
         </button>
       </div>
     </div>

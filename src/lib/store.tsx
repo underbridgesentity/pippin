@@ -4,22 +4,32 @@
 // effects (XP, level-ups, badge unlocks, feed entries, toasts).
 
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react'
-import { api, defaultState, PENDING_GOAL_KEY, type ApiError, type SocialProvider } from './api'
+import { api, defaultState, normalize, PENDING_GOAL_KEY, type ApiError, type SocialProvider } from './api'
 import { storage } from './storage'
 import { BADGES, XP, earnedBadges, estimateBurn, levelFromXp, stepsToKm } from './gamification'
-import { CHALLENGE_BY_ID, type SeedMember } from './seed'
+import { CHALLENGE_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
 import { todayKey } from './format'
 import type {
   Account,
   ActivityKind,
+  Comment,
   FeedEntry,
   FeedKind,
   Goal,
   LoggedFood,
   MealType,
+  PostType,
+  ReactionKind,
   Settings,
   UserState,
 } from './types'
+
+const POST_ACTION: Record<PostType, string> = {
+  tip: 'shared a tip',
+  win: 'celebrated a win',
+  question: 'asked the squad',
+  update: 'shared an update',
+}
 
 type StoreState = {
   status: 'loading' | 'ready'
@@ -58,8 +68,11 @@ async function init() {
   try {
     const account = await api.getSession()
     if (account) {
-      let data = await api.loadState(account.id)
-      if (!data) {
+      const loaded = await api.loadState(account.id)
+      let data: UserState
+      if (loaded) {
+        data = normalize(loaded)
+      } else {
         // No saved state → a fresh OAuth user returning from a redirect.
         const goal = storage.get<Goal>(PENDING_GOAL_KEY) ?? 'eat'
         storage.remove(PENDING_GOAL_KEY)
@@ -86,6 +99,31 @@ function refreshCommunity(excludeId: string) {
       emit()
     })
     .catch(() => {})
+}
+
+/**
+ * Simulates the community noticing your post — a member leaves an encouraging
+ * reply shortly after you share. Locally this fakes the social loop; with a real
+ * backend, genuine cheers from real people arrive here instead.
+ */
+function scheduleSupport(feedId: string) {
+  setTimeout(() => {
+    const { data, account } = current
+    if (!data || !account) return
+    const seed = data.feed.length + Object.keys(data.comments).length + feedId.length
+    const member = MEMBERS[seed % MEMBERS.length]
+    const line = SUPPORT_LINES[seed % SUPPORT_LINES.length]
+    const com: Comment = { id: `spt_${Date.now().toString(36)}`, at: Date.now(), author: member.id, name: member.name, initial: member.initial, avatar: member.avatar, text: line }
+    const next: UserState = {
+      ...data,
+      comments: { ...data.comments, [feedId]: [...(data.comments[feedId] ?? []), com] },
+      kudosReceived: data.kudosReceived + 3,
+    }
+    current = { ...current, data: next }
+    void api.saveState(account.id, next)
+    emit()
+    setToast(`${member.name} cheered you on 👏`)
+  }, 2800)
 }
 
 function setToast(msg: string) {
@@ -160,7 +198,8 @@ function commit(next: UserState, opts?: { toast?: string }) {
 export const actions = {
   async signUp(input: { name: string; email: string; password: string; goal: Goal }) {
     const account = await api.signUp(input)
-    const base = (await api.loadState(account.id)) ?? defaultState(input.goal, Date.now())
+    const loaded = await api.loadState(account.id)
+    const base = loaded ? normalize(loaded) : defaultState(input.goal, Date.now())
     // Earn the welcome badge up front so it's there before any action.
     const data: UserState = {
       ...base,
@@ -185,7 +224,8 @@ export const actions = {
 
   async logIn(input: { email: string; password: string }) {
     const account = await api.logIn(input)
-    const data = (await api.loadState(account.id)) ?? defaultState('eat', Date.now())
+    const loaded = await api.loadState(account.id)
+    const data = loaded ? normalize(loaded) : defaultState('eat', Date.now())
     current = { ...current, account, data, community: null }
     emit()
     refreshCommunity(account.id)
@@ -195,7 +235,8 @@ export const actions = {
     const res = await api.signInWithProvider(provider, { goal })
     if (res === 'redirect') return // Supabase OAuth: page navigates; init() handles the return.
     const account = res
-    let data = (await api.loadState(account.id)) ?? freshUserData(account, goal)
+    const loaded = await api.loadState(account.id)
+    let data = loaded ? normalize(loaded) : freshUserData(account, goal)
     if (!data.badges['first-steps']) data = { ...data, badges: { ...data.badges, 'first-steps': Date.now() } }
     void api.saveState(account.id, data)
     current = { ...current, account, data, community: null }
@@ -307,10 +348,43 @@ export const actions = {
     commit({ ...data, questClaimedOn: today, xp: data.xp + XP.DAILY_QUEST }, { toast: `Daily quest complete · +${XP.DAILY_QUEST} XP` })
   },
 
-  toggleCheer(feedId: string) {
+  react(feedId: string, kind: ReactionKind) {
     const { data } = current
     if (!data) return
-    commit({ ...data, cheers: { ...data.cheers, [feedId]: !data.cheers[feedId] } })
+    const reactions = { ...data.reactions }
+    if (reactions[feedId] === kind) delete reactions[feedId]
+    else reactions[feedId] = kind
+    const cheers = { ...data.cheers }
+    delete cheers[feedId] // retire any legacy cheer on this post
+    commit({ ...data, reactions, cheers })
+  },
+
+  comment(feedId: string, text: string, tip = false) {
+    const { data, account } = current
+    if (!data || !account || !text.trim()) return
+    const com: Comment = {
+      id: `cm_${Date.now().toString(36)}`,
+      at: Date.now(),
+      author: 'me',
+      name: account.name.split(' ')[0],
+      initial: (account.name[0] || 'Y').toUpperCase(),
+      avatar: account.avatar,
+      text: text.trim(),
+      tip,
+    }
+    commit({ ...data, comments: { ...data.comments, [feedId]: [...(data.comments[feedId] ?? []), com] } })
+  },
+
+  post(input: { type: PostType; text: string }) {
+    const { data, account } = current
+    if (!data || !account || !input.text.trim()) return
+    const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim() })
+    commit({ ...data, feed: [entry, ...data.feed], xp: data.xp + 20 }, { toast: 'Shared with your squad ✨' })
+    scheduleSupport(entry.id)
+  },
+
+  cheerMember(name: string) {
+    setToast(`You cheered ${name} 👏`)
   },
 
   updateSettings(patch: Partial<Settings>) {

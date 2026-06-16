@@ -5,7 +5,7 @@ import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
 import { num } from '../lib/format'
 
-export function Profile({ onOpenSettings }: { onOpenSettings: () => void }) {
+export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => void; onShareWin: () => void }) {
   const { account } = useStore()
   const d = useDerived()
   if (!account || !d) return null
@@ -66,6 +66,20 @@ export function Profile({ onOpenSettings }: { onOpenSettings: () => void }) {
         ))}
       </div>
 
+      {/* community impact — celebrating generosity, not just personal metrics */}
+      <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
+        <div style={{ flex: 1, background: 'linear-gradient(135deg,#FF8A1E,#FFC53D)', borderRadius: 18, padding: '14px 16px', boxShadow: '0 5px 14px rgba(255,138,30,.2)' }}>
+          <div style={{ fontSize: 20, marginBottom: 2 }}>👏</div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#fff' }}>{num(d.kudosGiven)}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.92)' }}>Cheers given</div>
+        </div>
+        <div style={{ flex: 1, background: 'linear-gradient(135deg,#FF6CB6,#FF4D6D)', borderRadius: 18, padding: '14px 16px', boxShadow: '0 5px 14px rgba(255,77,109,.2)' }}>
+          <div style={{ fontSize: 20, marginBottom: 2 }}>💛</div>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#fff' }}>{num(d.kudosReceived)}</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.92)' }}>Cheers received</div>
+        </div>
+      </div>
+
       {/* proud moment */}
       <div style={{ position: 'relative', background: 'linear-gradient(135deg,#FF8A1E,#FF4D6D)', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden', boxShadow: '0 10px 24px rgba(255,77,109,.28)' }}>
         <Confetti count={24} />
@@ -78,7 +92,7 @@ export function Profile({ onOpenSettings }: { onOpenSettings: () => void }) {
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#fff', lineHeight: 1.15 }}>{proud.text}</div>
           </div>
         </div>
-        <button className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: '#fff', color: '#FF4D6D', border: 'none', borderRadius: 15, padding: 12, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.1)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.1)' }}>
+        <button onClick={onShareWin} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: '#fff', color: '#FF4D6D', border: 'none', borderRadius: 15, padding: 12, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.1)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.1)' }}>
           Share your win
         </button>
       </div>

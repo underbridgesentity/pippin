@@ -12,8 +12,11 @@ import { Welcome } from './screens/Welcome'
 import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
+import { CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
 import { StoreProvider, useStore } from './lib/store'
+import { useFeed } from './lib/hooks'
 import { firstName } from './lib/format'
+import type { PostType } from './lib/types'
 
 export function App() {
   return (
@@ -29,22 +32,38 @@ export function App() {
 
 function Root() {
   const { status, account, data, toast } = useStore()
+  const feed = useFeed()
   const [tab, setTab] = useState<Tab>('home')
   const [capture, setCapture] = useState(false)
   const [activity, setActivity] = useState(false)
   const [settings, setSettings] = useState(false)
+  const [compose, setCompose] = useState<{ open: boolean; type?: PostType }>({ open: false })
+  const [postId, setPostId] = useState<string | null>(null)
+  const [memberId, setMemberId] = useState<string | null>(null)
+  const [notifs, setNotifs] = useState(false)
 
   if (status === 'loading') return <Splash />
   if (!account || !data) return <Auth />
   if (!data.welcomed) return <Welcome name={firstName(account.name)} />
 
+  const openPost = postId ? feed.find((p) => p.id === postId) ?? null : null
+
   return (
     <>
       <div className="fettle-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
-        {tab === 'home' && <Home onOpenCapture={() => setCapture(true)} onAddActivity={() => setActivity(true)} />}
+        {tab === 'home' && (
+          <Home
+            onOpenCapture={() => setCapture(true)}
+            onAddActivity={() => setActivity(true)}
+            onCompose={() => setCompose({ open: true, type: 'update' })}
+            onOpenPost={setPostId}
+            onOpenMember={setMemberId}
+            onOpenNotifications={() => setNotifs(true)}
+          />
+        )}
         {tab === 'challenges' && <Quests />}
         {tab === 'squad' && <Squad />}
-        {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} />}
+        {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} onShareWin={() => setCompose({ open: true, type: 'win' })} />}
       </div>
 
       <TabBar tab={tab} onTab={setTab} onCapture={() => setCapture(true)} />
@@ -52,6 +71,12 @@ function Root() {
       {capture && <Capture onClose={() => setCapture(false)} />}
       <AddActivity open={activity} onClose={() => setActivity(false)} />
       <Settings open={settings} onClose={() => setSettings(false)} />
+
+      {/* social overlays */}
+      <ComposeSheet open={compose.open} initialType={compose.type} onClose={() => setCompose({ open: false })} />
+      <NotificationsSheet open={notifs} onClose={() => setNotifs(false)} onOpenMember={(id) => { setNotifs(false); setMemberId(id) }} />
+      <CommentsSheet post={openPost} onClose={() => setPostId(null)} onOpenMember={setMemberId} />
+      <MemberProfileSheet memberId={memberId} onClose={() => setMemberId(null)} />
 
       {toast && <Toast key={toast.key} message={toast.msg} />}
     </>

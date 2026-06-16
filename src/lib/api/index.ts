@@ -10,5 +10,5 @@ const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const api: FettleApi = url && key ? createSupabaseApi(url, key) : localApi
 
-export { ApiError, defaultState, DEFAULT_SETTINGS, PENDING_GOAL_KEY } from './contract'
+export { ApiError, defaultState, normalize, DEFAULT_SETTINGS, PENDING_GOAL_KEY } from './contract'
 export type { FettleApi, SocialProvider } from './contract'
