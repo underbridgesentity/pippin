@@ -64,17 +64,19 @@ export type Circle = {
   metric: CircleMetric
   /** days left in this week's circle challenge */
   daysLeft: number
-  /** reward the whole circle unlocks if they hit the goal together */
+  /** reward badge the circle unlocks (badge name, no "badge" suffix) */
   reward: string
   rewardEmoji: string
+  /** your personal contribution that earns you the reward badge */
+  youTarget: number
 }
 
 export const CIRCLES: Circle[] = [
-  { id: 'cir-runners', name: 'Morning Runners', emoji: '🏃', color: '#FF8A1E', tint: '#FFF0DC', count: '4.2k', goal: 'Run before 8am, 4× a week', members: ['m-maya', 'm-priya', 'm-leo'], blurb: 'Early miles, big smiles. We lace up before the world wakes, come run with us.', goalUnit: 'runs this week', goalTarget: 2000, goalProgress: 1486, metric: 'activities', daysLeft: 4, reward: 'Sunrise Crew badge', rewardEmoji: '🌅' },
-  { id: 'cir-sugarfree', name: 'Sugar-Free Squad', emoji: '🍓', color: '#FF4D6D', tint: '#FFE7EC', count: '2.8k', goal: 'Cut added sugar, one day at a time', members: ['m-theo', 'm-aria', 'm-nina'], blurb: 'Beating cravings together. Share swaps, recipes and the wins (and the slip-ups, no judgement here).', goalUnit: 'sugar-free days', goalTarget: 1500, goalProgress: 968, metric: 'days', daysLeft: 6, reward: 'Sweet Freedom badge', rewardEmoji: '🍬' },
-  { id: 'cir-newbeginnings', name: 'New Beginnings', emoji: '🌱', color: '#18C98A', tint: '#E2F8EF', count: '6.1k', goal: 'Build the habit, start small', members: ['m-aria', 'm-owen', 'm-kabelo'], blurb: 'Just starting out? This is your soft landing. Every streak begins at day one, we celebrate them all.', goalUnit: 'meals logged', goalTarget: 5000, goalProgress: 3124, metric: 'meals', daysLeft: 9, reward: 'First Bloom badge', rewardEmoji: '🌸' },
-  { id: 'cir-mindful', name: 'Mindful Eating', emoji: '🧘', color: '#7C3AF6', tint: '#EFE7FF', count: '1.9k', goal: 'Eat slow, log it, no guilt', members: ['m-nina', 'm-priya'], blurb: 'Wellness over willpower. Less restriction, more awareness, and a lot of encouragement.', goalUnit: 'mindful meals', goalTarget: 1200, goalProgress: 742, metric: 'meals', daysLeft: 5, reward: 'Zen Garden badge', rewardEmoji: '🪷' },
-  { id: 'cir-steps', name: 'Step It Up', emoji: '👟', color: '#2BB7F2', tint: '#E2F4FE', count: '5.4k', goal: '10k steps a day, together', members: ['m-leo', 'm-owen', 'm-kabelo', 'm-maya'], blurb: 'Walk, pace, wander, it all counts. Hit your steps and keep the squad streak alive.', goalUnit: 'steps', goalTarget: 5_000_000, goalProgress: 3_412_900, metric: 'steps', daysLeft: 3, reward: 'Trailblazer badge', rewardEmoji: '🏆' },
+  { id: 'cir-runners', name: 'Morning Runners', emoji: '🏃', color: '#FF8A1E', tint: '#FFF0DC', count: '4.2k', goal: 'Run before 8am, 4× a week', members: ['m-maya', 'm-priya', 'm-leo'], blurb: 'Early miles, big smiles. We lace up before the world wakes, come run with us.', goalUnit: 'runs this week', goalTarget: 2000, goalProgress: 1486, metric: 'activities', daysLeft: 4, reward: 'Sunrise Crew', rewardEmoji: '🌅', youTarget: 3 },
+  { id: 'cir-sugarfree', name: 'Sugar-Free Squad', emoji: '🍓', color: '#FF4D6D', tint: '#FFE7EC', count: '2.8k', goal: 'Cut added sugar, one day at a time', members: ['m-theo', 'm-aria', 'm-nina'], blurb: 'Beating cravings together. Share swaps, recipes and the wins (and the slip-ups, no judgement here).', goalUnit: 'sugar-free days', goalTarget: 1500, goalProgress: 968, metric: 'days', daysLeft: 6, reward: 'Sweet Freedom', rewardEmoji: '🍬', youTarget: 3 },
+  { id: 'cir-newbeginnings', name: 'New Beginnings', emoji: '🌱', color: '#18C98A', tint: '#E2F8EF', count: '6.1k', goal: 'Build the habit, start small', members: ['m-aria', 'm-owen', 'm-kabelo'], blurb: 'Just starting out? This is your soft landing. Every streak begins at day one, we celebrate them all.', goalUnit: 'meals logged', goalTarget: 5000, goalProgress: 3124, metric: 'meals', daysLeft: 9, reward: 'First Bloom', rewardEmoji: '🌸', youTarget: 3 },
+  { id: 'cir-mindful', name: 'Mindful Eating', emoji: '🧘', color: '#7C3AF6', tint: '#EFE7FF', count: '1.9k', goal: 'Eat slow, log it, no guilt', members: ['m-nina', 'm-priya'], blurb: 'Wellness over willpower. Less restriction, more awareness, and a lot of encouragement.', goalUnit: 'mindful meals', goalTarget: 1200, goalProgress: 742, metric: 'meals', daysLeft: 5, reward: 'Zen Garden', rewardEmoji: '🪷', youTarget: 3 },
+  { id: 'cir-steps', name: 'Step It Up', emoji: '👟', color: '#2BB7F2', tint: '#E2F4FE', count: '5.4k', goal: '10k steps a day, together', members: ['m-leo', 'm-owen', 'm-kabelo', 'm-maya'], blurb: 'Walk, pace, wander, it all counts. Hit your steps and keep the squad streak alive.', goalUnit: 'steps', goalTarget: 5_000_000, goalProgress: 3_412_900, metric: 'steps', daysLeft: 3, reward: 'Trailblazer', rewardEmoji: '🏆', youTarget: 12000 },
 ]
 
 export const CIRCLE_BY_ID: Record<string, Circle> = Object.fromEntries(CIRCLES.map((c) => [c.id, c]))

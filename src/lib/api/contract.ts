@@ -79,6 +79,7 @@ export function defaultState(goal: Goal, now: number): UserState {
     challengeJoinedOn: {},
     friends: [],
     circles: [],
+    checkIns: [],
     badges: {},
     cheers: {},
     reactions: {},
@@ -102,6 +103,7 @@ export function normalize(s: UserState): UserState {
     badges: s.badges ?? {},
     friends: s.friends ?? [],
     circles: s.circles ?? [],
+    checkIns: s.checkIns ?? [],
   }
 }
 

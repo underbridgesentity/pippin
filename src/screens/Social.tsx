@@ -3,12 +3,12 @@ import { Sheet } from '../components/Sheet'
 import { Avatar } from '../components/Avatar'
 import { actions, useStore } from '../lib/store'
 import { useFeed } from '../lib/hooks'
-import { REACTIONS, REACTION_BY_KIND } from '../lib/social'
+import { REACTIONS, REACTION_BY_KIND, MOODS } from '../lib/social'
 import { POST_TYPES, POST_TYPE_BY_TYPE } from '../lib/social'
 import { CIRCLE_BY_ID, MEMBER_BY_ID } from '../lib/seed'
 import { relativeTime, num } from '../lib/format'
 import { buildCircleFeed, circleGoalProgress, type DecoratedFeed } from '../lib/selectors'
-import type { Comment, PostType } from '../lib/types'
+import type { Comment, Mood, PostType } from '../lib/types'
 
 // ── Comments + reactions thread ──────────────────────────────────────────────
 export function CommentsSheet({ post, onClose, onOpenMember }: { post: DecoratedFeed | null; onClose: () => void; onOpenMember: (id: string) => void }) {
@@ -182,6 +182,58 @@ export function ComposeSheet({ open, initialType, circleId, onClose }: { open: b
   )
 }
 
+// ── Daily check-in (accountability buddies) ─────────────────────────────────
+export function CheckInSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [mood, setMood] = useState<Mood>('ok')
+  const [note, setNote] = useState('')
+
+  useEffect(() => {
+    if (open) {
+      setMood('ok')
+      setNote('')
+    }
+  }, [open])
+
+  function submit() {
+    actions.checkIn(mood, note)
+    onClose()
+  }
+
+  return (
+    <Sheet open={open} onClose={onClose} title="Daily check-in">
+      <div style={{ padding: '4px 18px 24px' }}>
+        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#241544', marginBottom: 14 }}>How's today going?</div>
+        <div style={{ display: 'flex', gap: 10, marginBottom: 18 }}>
+          {MOODS.map((m) => (
+            <button
+              key={m.id}
+              onClick={() => setMood(m.id)}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: mood === m.id ? m.tint : '#fff', border: `2.5px solid ${mood === m.id ? m.color : '#ECE6FA'}`, borderRadius: 18, padding: '14px 4px', cursor: 'pointer' }}
+            >
+              <span style={{ fontSize: 30 }}>{m.emoji}</span>
+              <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: mood === m.id ? m.color : '#241544' }}>{m.label}</span>
+            </button>
+          ))}
+        </div>
+        <textarea
+          value={note}
+          onChange={(e) => setNote(e.target.value)}
+          placeholder="Anything on your mind? Your buddy will see it. (optional)"
+          rows={3}
+          style={{ width: '100%', background: '#fff', border: '2.5px solid #ECE6FA', borderRadius: 18, padding: 16, fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#241544', outline: 'none', resize: 'none', lineHeight: 1.45, marginBottom: 16 }}
+        />
+        <button
+          onClick={submit}
+          className="pressable"
+          style={{ width: '100%', background: '#7C3AF6', color: '#fff', border: 'none', borderRadius: 18, padding: 16, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, cursor: 'pointer', boxShadow: '0 5px 0 #5B22C9', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 #5B22C9' }}
+        >
+          Check in for today
+        </button>
+      </div>
+    </Sheet>
+  )
+}
+
 // ── Member profile ───────────────────────────────────────────────────────────
 export function MemberProfileSheet({ memberId, onClose }: { memberId: string | null; onClose: () => void }) {
   const { data } = useStore()
@@ -311,6 +363,24 @@ export function CircleSheet({
               <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Reward unlocked!</div>
               <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B7A1E' }}>The circle earned the {c.reward} together.</div>
             </div>
+          </div>
+        )}
+
+        {/* your personal reward toward the circle */}
+        {joined && (
+          <div style={{ background: goal.youEarned ? '#FFF7E6' : '#fff', border: `2px solid ${goal.youEarned ? '#FFC53D' : '#ECE6FA'}`, borderRadius: 16, padding: '13px 14px', marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: goal.youEarned ? 0 : 8 }}>
+              <span style={{ fontSize: 22 }}>{goal.youEarned ? c.rewardEmoji : '🎖️'}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544' }}>{goal.youEarned ? `You earned the ${c.reward} badge!` : `Earn the ${c.reward} badge`}</div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: goal.youEarned ? '#9B7A1E' : '#9B91B8' }}>{goal.youEarned ? "It's on your profile. Nice work." : `Your part: ${num(goal.yours)} / ${num(goal.youTarget)}`}</div>
+              </div>
+            </div>
+            {!goal.youEarned && (
+              <div style={{ height: 8, borderRadius: 6, background: '#F1ECFA', overflow: 'hidden' }}>
+                <div style={{ width: `${goal.youPct * 100}%`, height: '100%', borderRadius: 6, background: c.color, transition: 'width .5s ease' }} />
+              </div>
+            )}
           </div>
         )}
 

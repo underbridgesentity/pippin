@@ -124,6 +124,26 @@ export function Profile({ onOpenSettings, onShareWin }: { onOpenSettings: () => 
           </div>
         ))}
       </div>
+
+      {/* circle rewards */}
+      {d.circleBadges.some((b) => b.inCircle || b.unlocked) && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '18px 2px 12px' }}>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Circle rewards</span>
+            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#9B91B8' }}>{d.circleBadges.filter((b) => b.unlocked).length} earned</span>
+          </div>
+          <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
+            {d.circleBadges.filter((b) => b.inCircle || b.unlocked).map((b) => (
+              <div key={b.id} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.5 }} title={b.name}>
+                <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : '#ECE6FA', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, boxShadow: '0 4px 10px rgba(120,60,180,.12)' }}>
+                  {b.unlocked ? b.emoji : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9BFE0" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>}
+                </div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#7A719B', lineHeight: 1.2 }}>{b.name}</div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   )
 }

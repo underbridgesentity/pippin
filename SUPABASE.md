@@ -61,8 +61,12 @@ the buttons sign into a per-provider demo account so the flow is testable offlin
 ## What's real vs. next
 
 - ✅ Real auth, cloud-synced state, real global leaderboard.
-- ⏭️ **Friends** (invite codes / accept requests) and **friends-only leaderboards**
-  are the natural next step, add a `friendships` table and filter the leaderboard
-  query by it.
+- ✅ **Schema is ready for multi-user friends and circles.** `supabase/schema.sql`
+  now also creates `friendships` (directed requests with a `status` of `pending` /
+  `accepted`) and `circle_members`, both with RLS. Run the schema and the tables
+  are there. Wiring the app's friends/circles UI to these tables (real friend
+  requests, shared circle membership and feeds) is the remaining step, and it can
+  only be built and verified once your project is live, because it needs real
+  rows from real users to test against.
 - ⏭️ Meal **photos** currently embed as compressed data-URLs inside the JSON state.
   For scale, move them to **Supabase Storage** and keep only the URL in state.

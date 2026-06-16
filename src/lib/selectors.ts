@@ -69,24 +69,43 @@ export function findDecoratedPost(s: UserState, id: string, now = Date.now()): D
   return entry ? decorateEntry(entry, s) : null
 }
 
+/** The user's raw contribution to a circle's metric (regardless of joined). */
+export function circleYours(s: UserState, circle: Circle): number {
+  if (circle.metric === 'steps') return s.activities.reduce((t, a) => t + a.steps, 0)
+  if (circle.metric === 'activities') return s.activities.length
+  if (circle.metric === 'meals') return s.meals.length
+  const days = new Set<string>()
+  s.meals.forEach((m) => days.add(dayKey(m.at)))
+  s.activities.forEach((a) => days.add(dayKey(a.at)))
+  return days.size
+}
+
 /** Collective progress on a circle's shared goal, with the user's own contribution. */
-export function circleGoalProgress(s: UserState, circle: Circle, now = Date.now()) {
+export function circleGoalProgress(s: UserState, circle: Circle) {
   const joined = s.circles.includes(circle.id)
-  let yours = 0
-  if (joined) {
-    if (circle.metric === 'steps') yours = s.activities.reduce((t, a) => t + a.steps, 0)
-    else if (circle.metric === 'activities') yours = s.activities.length
-    else if (circle.metric === 'meals') yours = s.meals.length
-    else {
-      const days = new Set<string>()
-      s.meals.forEach((m) => days.add(dayKey(m.at)))
-      s.activities.forEach((a) => days.add(dayKey(a.at)))
-      yours = days.size
-    }
-  }
-  void now
+  const yours = joined ? circleYours(s, circle) : 0
   const collective = circle.goalProgress + yours
-  return { joined, yours, collective, target: circle.goalTarget, pct: Math.min(1, collective / circle.goalTarget) }
+  return {
+    joined,
+    yours,
+    collective,
+    target: circle.goalTarget,
+    pct: Math.min(1, collective / circle.goalTarget),
+    youTarget: circle.youTarget,
+    youPct: Math.min(1, yours / circle.youTarget),
+    youEarned: joined && yours >= circle.youTarget,
+  }
+}
+
+// ── Circle reward badges ─────────────────────────────────────────────────────
+export type CircleBadge = { id: string; name: string; emoji: string; color: string; circleId: string }
+
+export const CIRCLE_BADGES: CircleBadge[] = CIRCLES.map((c) => ({ id: `circle-${c.id}`, name: c.reward, emoji: c.rewardEmoji, color: c.color, circleId: c.id }))
+export const CIRCLE_BADGE_BY_ID: Record<string, CircleBadge> = Object.fromEntries(CIRCLE_BADGES.map((b) => [b.id, b]))
+
+/** Circle reward badge ids the user has earned (joined + hit their personal target). */
+export function earnedCircleBadges(s: UserState): string[] {
+  return CIRCLES.filter((c) => s.circles.includes(c.id) && circleYours(s, c) >= c.youTarget).map((c) => `circle-${c.id}`)
 }
 
 export type LeaderRow = {
@@ -164,6 +183,12 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
   const friends = s.friends.map((id) => MEMBER_BY_ID[id]).filter((m): m is SeedMember => !!m)
   const friendsLeaderboard = buildLeaderboard(account, weeklyXp, friends)
 
+  const earnedCircleIds = new Set(earnedCircleBadges(s))
+  const circleBadges = CIRCLE_BADGES.map((b) => ({ ...b, unlocked: earnedCircleIds.has(b.id), inCircle: s.circles.includes(b.circleId) }))
+
+  const buddy = s.buddyId ? MEMBER_BY_ID[s.buddyId] ?? null : null
+  const todayCheckIn = s.checkIns.find((ci) => dayKey(ci.at) === today) ?? null
+
   return {
     now,
     account,
@@ -213,6 +238,11 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
     friendCount: friends.length,
     friendsLeaderboard,
     circleIds: s.circles,
+    circleBadges,
+    buddy,
+    todayCheckIn,
+    checkInCount: s.checkIns.length,
+    buddyLastCheckIn: s.buddyLastCheckIn ?? null,
   }
 }
 

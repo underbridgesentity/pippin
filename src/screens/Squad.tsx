@@ -2,15 +2,16 @@ import { useState } from 'react'
 import { Avatar } from '../components/Avatar'
 import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
-import { num } from '../lib/format'
+import { num, relativeTime } from '../lib/format'
+import { MOOD_BY_ID } from '../lib/social'
 import { CIRCLES, CIRCLE_BY_ID, MEMBERS } from '../lib/seed'
-import type { LeaderRow } from '../lib/selectors'
+import type { Derived, LeaderRow } from '../lib/selectors'
 import type { SeedMember } from '../lib/seed'
 
 const TABS = ['Leaderboard', 'Friends', 'Circles'] as const
 type Tab = (typeof TABS)[number]
 
-export function Squad({ onOpenMember, onOpenCircle }: { onOpenMember: (id: string) => void; onOpenCircle: (id: string) => void }) {
+export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember: (id: string) => void; onOpenCircle: (id: string) => void; onCheckIn: () => void }) {
   const { data } = useStore()
   const d = useDerived()
   const [tab, setTab] = useState<Tab>('Leaderboard')
@@ -93,6 +94,7 @@ export function Squad({ onOpenMember, onOpenCircle }: { onOpenMember: (id: strin
 
       {tab === 'Friends' && (
         <>
+          <BuddySection d={d} onCheckIn={onCheckIn} onOpenMember={onOpenMember} />
           {d.friends.length > 0 ? (
             <>
               <SectionLabel>Your friends · {d.friendCount}</SectionLabel>
@@ -165,6 +167,68 @@ function AddBtn({ onClick }: { onClick: () => void }) {
 }
 function NudgeBtn({ onClick }: { onClick: () => void }) {
   return <button onClick={onClick} style={{ background: '#FFF0DC', color: '#FF8A1E', border: 'none', borderRadius: 13, padding: '9px 14px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>👋 Nudge</button>
+}
+
+function BuddySection({ d, onCheckIn, onOpenMember }: { d: Derived; onCheckIn: () => void; onOpenMember: (id: string) => void }) {
+  const buddy = d.buddy
+  if (buddy) {
+    const last = d.buddyLastCheckIn
+    const lastMood = last ? MOOD_BY_ID[last.mood] : null
+    const mine = d.todayCheckIn
+    const myMood = mine ? MOOD_BY_ID[mine.mood] : null
+    return (
+      <div style={{ background: 'linear-gradient(135deg,#7C3AF6,#9B5CFF)', borderRadius: 22, padding: 16, marginBottom: 20, boxShadow: '0 8px 20px rgba(124,58,246,.22)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.85)', textTransform: 'uppercase', letterSpacing: '.5px' }}>🤝 Accountability buddy</span>
+          <button onClick={() => actions.removeBuddy()} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: 'rgba(255,255,255,.7)' }}>Change</button>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+          <button onClick={() => onOpenMember(buddy.id)} style={{ border: 'none', background: 'none', padding: 0, cursor: 'pointer', flex: 'none' }}>
+            <Avatar initial={buddy.initial} gradient={buddy.avatar} size={48} radius={16} ring="rgba(255,255,255,.5)" />
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#fff' }}>{buddy.name}</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: 'rgba(255,255,255,.8)' }}>Level {buddy.level ?? 1} · 🔥 {buddy.streak ?? 0}-day streak</div>
+          </div>
+          <button onClick={() => actions.nudgeFriend(buddy.name)} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 12, padding: '8px 12px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>👋 Nudge</button>
+        </div>
+        {last && lastMood && (
+          <div style={{ background: 'rgba(255,255,255,.16)', borderRadius: 14, padding: '10px 12px', marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.8)', marginBottom: 2 }}>{buddy.name.split(' ')[0]} · {lastMood.emoji} {lastMood.label} · {relativeTime(last.at)}</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13.5, color: '#fff', lineHeight: 1.4 }}>"{last.note}"</div>
+          </div>
+        )}
+        <button onClick={onCheckIn} className="pressable" style={{ width: '100%', background: '#fff', color: '#7C3AF6', border: 'none', borderRadius: 14, padding: 13, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.12)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.12)' }}>
+          {mine && myMood ? `Today: ${myMood.emoji} ${myMood.label} (update)` : 'Check in for today'}
+        </button>
+      </div>
+    )
+  }
+  if (d.friends.length > 0) {
+    return (
+      <div style={{ background: '#fff', borderRadius: 22, padding: 16, marginBottom: 20, boxShadow: '0 6px 16px rgba(120,60,180,.06)' }}>
+        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, color: '#241544', marginBottom: 4 }}>🤝 Pick an accountability buddy</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8', marginBottom: 14 }}>Pair up with a friend to check in daily and keep each other on track.</div>
+        <div className="fettle-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto' }}>
+          {d.friends.map((f) => (
+            <button key={f.id} onClick={() => actions.setBuddy(f.id)} style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', width: 64 }}>
+              <Avatar initial={f.initial} gradient={f.avatar} size={48} radius={16} />
+              <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#241544', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 64 }}>{f.name.split(' ')[0]}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div style={{ background: '#fff', borderRadius: 22, padding: '18px 16px', marginBottom: 20, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'flex', alignItems: 'center', gap: 12 }}>
+      <span style={{ fontSize: 30 }}>🤝</span>
+      <div>
+        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Want an accountability buddy?</div>
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#9B91B8' }}>Add a friend below first, then pair up to check in daily.</div>
+      </div>
+    </div>
+  )
 }
 
 // ── circles ──────────────────────────────────────────────────────────────────

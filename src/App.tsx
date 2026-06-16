@@ -12,7 +12,7 @@ import { Welcome } from './screens/Welcome'
 import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
-import { CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
+import { CheckInSheet, CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
 import { StoreProvider, useStore } from './lib/store'
 import { findDecoratedPost } from './lib/selectors'
 import { firstName } from './lib/format'
@@ -41,6 +41,7 @@ function Root() {
   const [memberId, setMemberId] = useState<string | null>(null)
   const [circleId, setCircleId] = useState<string | null>(null)
   const [notifs, setNotifs] = useState(false)
+  const [checkInOpen, setCheckInOpen] = useState(false)
 
   if (status === 'loading') return <Splash />
   if (!account || !data) return <Auth />
@@ -62,7 +63,7 @@ function Root() {
           />
         )}
         {tab === 'challenges' && <Quests />}
-        {tab === 'squad' && <Squad onOpenMember={setMemberId} onOpenCircle={setCircleId} />}
+        {tab === 'squad' && <Squad onOpenMember={setMemberId} onOpenCircle={setCircleId} onCheckIn={() => setCheckInOpen(true)} />}
         {tab === 'profile' && <Profile onOpenSettings={() => setSettings(true)} onShareWin={() => setCompose({ open: true, type: 'win' })} />}
       </div>
 
@@ -82,6 +83,7 @@ function Root() {
         onCompose={(cid) => setCompose({ open: true, type: 'update', circleId: cid })}
       />
       <ComposeSheet open={compose.open} initialType={compose.type} circleId={compose.circleId} onClose={() => setCompose({ open: false })} />
+      <CheckInSheet open={checkInOpen} onClose={() => setCheckInOpen(false)} />
       <NotificationsSheet open={notifs} onClose={() => setNotifs(false)} onOpenMember={(id) => { setNotifs(false); setMemberId(id) }} />
       <CommentsSheet post={openPost} onClose={() => setPostId(null)} onOpenMember={setMemberId} />
       <MemberProfileSheet memberId={memberId} onClose={() => setMemberId(null)} />

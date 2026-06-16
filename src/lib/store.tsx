@@ -7,17 +7,21 @@ import { createContext, useContext, useSyncExternalStore, type ReactNode } from 
 import { api, defaultState, normalize, PENDING_GOAL_KEY, type ApiError, type SocialProvider } from './api'
 import { storage } from './storage'
 import { BADGES, XP, earnedBadges, estimateBurn, levelFromXp, stepsToKm } from './gamification'
+import { CIRCLE_BADGE_BY_ID, earnedCircleBadges } from './selectors'
 import { CHALLENGE_BY_ID, CIRCLE_BY_ID, MEMBER_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
-import { todayKey } from './format'
+import { dayKey, todayKey } from './format'
 import type {
   Account,
   ActivityKind,
+  BuddyCheckIn,
+  CheckIn,
   Comment,
   FeedEntry,
   FeedKind,
   Goal,
   LoggedFood,
   MealType,
+  Mood,
   PostType,
   ReactionKind,
   Settings,
@@ -126,6 +130,24 @@ function scheduleSupport(feedId: string) {
   }, 2800)
 }
 
+/** Your accountability buddy checks in shortly after you do (simulated locally). */
+function scheduleBuddyResponse() {
+  setTimeout(() => {
+    const { data, account } = current
+    if (!data || !data.buddyId || !account) return
+    const m = MEMBER_BY_ID[data.buddyId]
+    if (!m) return
+    const i = data.checkIns.length
+    const moods: Mood[] = ['great', 'ok', 'great', 'ok', 'tough']
+    const buddyLastCheckIn: BuddyCheckIn = { at: Date.now(), mood: moods[i % moods.length], note: SUPPORT_LINES[i % SUPPORT_LINES.length] }
+    const next: UserState = { ...data, buddyLastCheckIn }
+    current = { ...current, data: next }
+    void api.saveState(account.id, next)
+    emit()
+    setToast(`${m.name} checked in and cheered you on 👋`)
+  }, 2600)
+}
+
 function setToast(msg: string) {
   toastKey += 1
   current = { ...current, toast: { msg, key: toastKey } }
@@ -172,17 +194,19 @@ function commit(next: UserState, opts?: { toast?: string }) {
 
   // Badge unlocks (derived → persist unlock timestamps so we only fire once)
   const owned = new Set(Object.keys(data.badges))
-  const freshlyEarned = earnedBadges({ ...data, feed }).filter((id) => !owned.has(id))
+  const nameOf = (id: string) => BADGES.find((x) => x.id === id)?.name ?? CIRCLE_BADGE_BY_ID[id]?.name
+  const allEarned = [...earnedBadges({ ...data, feed }), ...earnedCircleBadges(data)]
+  const freshlyEarned = allEarned.filter((id) => !owned.has(id))
   if (freshlyEarned.length) {
     const badges = { ...data.badges }
     for (const id of freshlyEarned) {
       badges[id] = Date.now()
-      const b = BADGES.find((x) => x.id === id)
-      if (b) feed.unshift(makeMyFeed(account, 'badge', `unlocked the ${b.name} badge`, { badge: b.name }))
+      const name = nameOf(id)
+      if (name) feed.unshift(makeMyFeed(account, 'badge', `unlocked the ${name} badge`, { badge: name }))
     }
     data = { ...data, badges }
-    const first = BADGES.find((x) => x.id === freshlyEarned[0])
-    if (first && !headline) headline = `Badge unlocked: ${first.name} 🏅`
+    const firstName = nameOf(freshlyEarned[0])
+    if (firstName && !headline) headline = `Badge unlocked: ${firstName} 🏅`
   }
 
   data = { ...data, feed: feed.slice(0, 60) }
@@ -415,6 +439,33 @@ export const actions = {
     const { data } = current
     if (!data) return
     commit({ ...data, circles: data.circles.filter((id) => id !== circleId) })
+  },
+
+  setBuddy(memberId: string) {
+    const { data } = current
+    if (!data) return
+    const m = MEMBER_BY_ID[memberId]
+    const buddyLastCheckIn: BuddyCheckIn = { at: Date.now(), mood: 'ok', note: "Glad we're in this together. Let's keep each other honest 💛" }
+    commit({ ...data, buddyId: memberId, buddyLastCheckIn }, { toast: `${m ? m.name : 'They'} is now your accountability buddy 🤝` })
+  },
+
+  removeBuddy() {
+    const { data } = current
+    if (!data) return
+    const next = { ...data }
+    delete next.buddyId
+    delete next.buddyLastCheckIn
+    commit(next)
+  },
+
+  checkIn(mood: Mood, note?: string) {
+    const { data } = current
+    if (!data) return
+    const today = todayKey()
+    const entry: CheckIn = { id: `ci_${Date.now().toString(36)}`, at: Date.now(), mood, note: note?.trim() || undefined }
+    const checkIns = [entry, ...data.checkIns.filter((ci) => dayKey(ci.at) !== today)]
+    commit({ ...data, checkIns }, { toast: 'Checked in for today ✓' })
+    if (data.buddyId) scheduleBuddyResponse()
   },
 
   updateSettings(patch: Partial<Settings>) {

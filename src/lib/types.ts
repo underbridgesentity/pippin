@@ -73,6 +73,13 @@ export type PostType = 'update' | 'tip' | 'question' | 'win'
 
 export type ReactionKind = 'cheer' | 'fire' | 'strong' | 'love'
 
+/** How you're feeling at a daily accountability check-in. */
+export type Mood = 'great' | 'ok' | 'tough'
+
+export type CheckIn = { id: string; at: number; mood: Mood; note?: string }
+
+export type BuddyCheckIn = { at: number; mood: Mood; note: string }
+
 export type Comment = {
   id: string
   at: number
@@ -123,6 +130,12 @@ export type UserState = {
   friends: string[]
   /** circle (support group) ids the user has joined */
   circles: string[]
+  /** your 1:1 accountability buddy (a member id) */
+  buddyId?: string
+  /** your daily check-ins */
+  checkIns: CheckIn[]
+  /** your buddy's most recent (simulated) check-in */
+  buddyLastCheckIn?: BuddyCheckIn
   /** badgeId -> unlock timestamp */
   badges: Record<string, number>
   /** feedEntryId -> cheered (legacy; superseded by reactions) */

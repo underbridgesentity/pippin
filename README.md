@@ -68,7 +68,11 @@ Everything below is real, computed from what you log, and persisted across reloa
   shared goal. Each circle has its own **feed** (post, react, reply right inside
   it) and a **collective weekly challenge** the members push toward together
   (shared goal, deadline, and a reward badge the whole circle unlocks), with your
-  own contribution counted in.
+  own contribution counted in. Hit your personal share and you **earn the circle's
+  reward badge** for real, shown in a Circle rewards section on your profile.
+- **Accountability buddies**, pair up 1:1 with a friend, do a **daily check-in**
+  (mood plus an optional note), see your buddy's latest check-in, and nudge each
+  other to stay on track.
 - **Settings**, edit profile, change daily targets and goal, log out.
 
 ## Architecture
