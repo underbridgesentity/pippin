@@ -8,7 +8,17 @@ import { computeWeeklyXp } from '../selectors'
 import { storage } from '../storage'
 import type { Account, Goal, UserState } from '../types'
 import type { SeedMember } from '../seed'
-import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type FettleApi } from './contract'
+import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type FettleApi, type SocialProvider } from './contract'
+
+// Only offer social buttons for providers actually enabled in Supabase, set via
+// VITE_AUTH_PROVIDERS (e.g. "google" or "google,apple"). Empty = email only.
+function enabledProviders(): SocialProvider[] {
+  const raw = import.meta.env.VITE_AUTH_PROVIDERS ?? ''
+  return raw
+    .split(',')
+    .map((s) => s.trim().toLowerCase())
+    .filter((p): p is SocialProvider => p === 'google' || p === 'apple')
+}
 
 type ProfileRow = { id: string; name: string; avatar: string; total_xp: number; weekly_xp: number; created_at?: string }
 
@@ -41,7 +51,7 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
 
   return {
     mode: 'supabase',
-    socialProviders: ['google', 'apple'],
+    socialProviders: enabledProviders(),
 
     async getSession() {
       return currentAccount()

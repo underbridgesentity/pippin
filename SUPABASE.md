@@ -43,20 +43,30 @@ check `api.mode` (`'local'` or `'supabase'`).
 
 ## 5. (Optional) Enable Google / Apple sign-in
 
-The "Continue with Google / Apple" buttons do a real OAuth redirect in Supabase
-mode. To make them work:
+In Supabase mode the social buttons do a real OAuth redirect, so they only work
+once the provider is configured. To avoid dead-end journeys, the buttons stay
+**hidden until you list the provider in `VITE_AUTH_PROVIDERS`**. Email sign-in
+always works regardless.
 
-1. **Authentication → Sign In / Providers** → enable **Google** (and/or **Apple**).
-2. Follow Supabase's provider guide to create OAuth credentials and paste the
-   client ID/secret. For Google: create an OAuth client in Google Cloud Console
-   and add `https://YOUR-PROJECT.supabase.co/auth/v1/callback` as an authorized
-   redirect URI.
-3. **Authentication → URL Configuration** → add your app's origin (e.g.
-   `http://localhost:5173`) to **Redirect URLs**.
+**Google (the realistic one to set up):**
+1. **Google Cloud Console → APIs & Services → Credentials → Create OAuth client ID
+   → Web application.** Add `https://mzimtqdtfuehxlfqzajx.supabase.co/auth/v1/callback`
+   as an authorized redirect URI. Copy the Client ID and Client Secret.
+2. **Supabase → Authentication → Sign In / Providers → Google** → enable, paste the
+   Client ID and Secret, save.
+3. **Supabase → Authentication → URL Configuration → Redirect URLs** → add your app
+   origin (e.g. `http://localhost:5173`, and your production URL later).
+4. In `.env.local` set `VITE_AUTH_PROVIDERS=google` and restart the dev server. The
+   Google button now appears and works.
 
-The chosen onboarding goal is preserved across the redirect, and a new social user
-gets the same first-run welcome + First Steps badge. In **local mode** (no Supabase)
-the buttons sign into a per-provider demo account so the flow is testable offline.
+**Apple** needs a paid **Apple Developer Program** account ($99/yr) plus a Services
+ID, a key, and return-URL setup. Once done, add `apple` to `VITE_AUTH_PROVIDERS`
+(e.g. `VITE_AUTH_PROVIDERS=google,apple`).
+
+The chosen onboarding goal is preserved across the redirect, a new social user gets
+the same first-run welcome + First Steps badge, and any OAuth error is surfaced as a
+toast instead of a silent dead-end. In **local mode** (no Supabase) the buttons sign
+into a per-provider demo account so the flow is testable offline.
 
 ## What's real vs. next
 

@@ -20,6 +20,7 @@ export function Auth() {
   const [password, setPassword] = useState('')
   const [err, setErr] = useState<Err>(null)
   const [busy, setBusy] = useState(false)
+  const hasSocial = api.socialProviders.length > 0
 
   async function submitSignup() {
     setBusy(true)
@@ -85,8 +86,12 @@ export function Auth() {
             <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 32, color: GRAPE, marginTop: 6 }}>Welcome back</div>
             <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#9B91B8' }}>Log in to keep your streak alive.</div>
           </div>
-          <SocialButtons busy={busy} onPick={social} />
-          <Divider />
+          {hasSocial && (
+            <>
+              <SocialButtons busy={busy} onPick={social} />
+              <Divider />
+            </>
+          )}
           <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@email.com" autoFocus />
           <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="Your password" onEnter={submitLogin} />
           {err && <ErrorNote>{err.message}</ErrorNote>}
@@ -118,8 +123,12 @@ export function Auth() {
 
       {step === 0 && (
         <>
-          <Divider />
-          <SocialButtons busy={busy} onPick={social} />
+          {hasSocial && (
+            <>
+              <Divider />
+              <SocialButtons busy={busy} onPick={social} />
+            </>
+          )}
           <LinkButton onClick={() => { setMode('login'); setErr(null) }}>I already have an account</LinkButton>
         </>
       )}

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { IOSDevice } from './components/IOSDevice'
 import { TabBar, type Tab } from './components/TabBar'
 import { Toast } from './components/Toast'
@@ -13,7 +13,7 @@ import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
 import { CheckInSheet, CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
-import { StoreProvider, useStore } from './lib/store'
+import { StoreProvider, useStore, actions } from './lib/store'
 import { findDecoratedPost } from './lib/selectors'
 import { firstName } from './lib/format'
 import type { PostType } from './lib/types'
@@ -42,6 +42,18 @@ function Root() {
   const [circleId, setCircleId] = useState<string | null>(null)
   const [notifs, setNotifs] = useState(false)
   const [checkInOpen, setCheckInOpen] = useState(false)
+
+  // Surface OAuth redirect errors (e.g. a provider that is not configured).
+  useEffect(() => {
+    const hash = window.location.hash.replace(/^#/, '')
+    const search = window.location.search.replace(/^\?/, '')
+    const p = new URLSearchParams(hash.includes('error') ? hash : search)
+    const desc = p.get('error_description') || p.get('error')
+    if (desc) {
+      actions.toast(`Sign-in failed: ${decodeURIComponent(desc).replace(/\+/g, ' ')}`)
+      window.history.replaceState(null, '', window.location.pathname)
+    }
+  }, [])
 
   if (status === 'loading') return <Splash />
   if (!account || !data) return <Auth />
