@@ -297,7 +297,7 @@ function LogScreen({
         <button onClick={onClose} aria-label="Close" style={{ ...iconBtn, position: 'absolute', left: 18, top: 54, background: 'rgba(36,21,68,.55)' }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
-        <button onClick={onRetake} style={{ position: 'absolute', right: 16, top: 56, background: 'rgba(36,21,68,.55)', border: 'none', borderRadius: 14, padding: '8px 14px', color: '#fff', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={onRetake} style={{ position: 'absolute', right: 16, top: 56, background: 'rgba(36,21,68,.5)', border: '1px solid rgba(255,255,255,0.18)', backdropFilter: 'blur(14px) saturate(160%)', WebkitBackdropFilter: 'blur(14px) saturate(160%)', borderRadius: 14, padding: '8px 14px', color: '#fff', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8h2.5l1.3-2h6.4l1.3 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" /><circle cx="12" cy="13" r="3.2" /></svg>
           {photo ? 'Retake' : 'Add photo'}
         </button>
@@ -432,5 +432,6 @@ function Stepper({ onClick, label }: { onClick: () => void; label: string }) {
   )
 }
 
-const iconBtn: React.CSSProperties = { width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,.16)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-const squareBtn: React.CSSProperties = { width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,.14)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+const glass: React.CSSProperties = { backdropFilter: 'blur(14px) saturate(160%)', WebkitBackdropFilter: 'blur(14px) saturate(160%)', border: '1px solid rgba(255,255,255,0.22)' }
+const iconBtn: React.CSSProperties = { width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,.16)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', ...glass }
+const squareBtn: React.CSSProperties = { width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,.14)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', ...glass }

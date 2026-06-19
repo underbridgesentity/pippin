@@ -18,17 +18,20 @@ export function TabBar({
     <div
       style={{
         position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        bottom: 'calc(14px + env(safe-area-inset-bottom, 0px))',
+        left: 14,
+        right: 14,
         flex: 'none',
-        background: '#fff',
-        borderTop: '1px solid #F0EAFB',
-        padding: '9px 8px 22px',
+        background: 'rgba(255,255,255,0.68)',
+        backdropFilter: 'blur(22px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(22px) saturate(180%)',
+        border: '1px solid rgba(255,255,255,0.7)',
+        borderRadius: 30,
+        padding: '8px 6px 10px',
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
-        boxShadow: '0 -8px 24px rgba(90,40,140,.06)',
+        boxShadow: '0 14px 36px rgba(90,40,140,.20), inset 0 1px 0 rgba(255,255,255,0.6)',
         zIndex: 30,
       }}
     >

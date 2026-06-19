@@ -42,7 +42,7 @@ export function Sheet({
           boxShadow: '0 -12px 40px rgba(36,21,68,.25)',
         }}
       >
-        <div style={{ position: 'sticky', top: 0, background: '#F4EFFF', zIndex: 2, padding: '12px 0 4px' }}>
+        <div style={{ position: 'sticky', top: 0, background: 'rgba(244,239,255,0.82)', backdropFilter: 'blur(18px) saturate(160%)', WebkitBackdropFilter: 'blur(18px) saturate(160%)', zIndex: 2, padding: '12px 0 4px' }}>
           <div style={{ width: 40, height: 5, borderRadius: 5, background: '#D9CEF0', margin: '0 auto' }} />
           {title && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px 8px' }}>
