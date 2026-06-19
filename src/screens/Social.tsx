@@ -44,6 +44,11 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
             <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{post.name}{isMine ? ' (You)' : ''}</div>
             <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{post.action} · {relativeTime(post.at)}</div>
           </div>
+          {isMine && post.kind === 'post' && (
+            <button onClick={() => { actions.deletePost(post.id); onClose() }} aria-label="Delete post" style={{ width: 34, height: 34, borderRadius: 11, background: '#FFE7EC', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FF4D6D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
+            </button>
+          )}
         </div>
 
         {post.text && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#3A2B5C', lineHeight: 1.45, marginBottom: 12 }}>{post.text}</div>}
@@ -73,7 +78,7 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
             <div style={{ textAlign: 'center', padding: '14px 0', fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#B6AEC9' }}>Be the first to cheer them on 💛</div>
           )}
           {post.comments.map((com) => (
-            <CommentRow key={com.id} com={com} onOpenMember={onOpenMember} />
+            <CommentRow key={com.id} com={com} onOpenMember={onOpenMember} onDelete={() => actions.deleteComment(post.id, com.id)} />
           ))}
           <div ref={endRef} />
         </div>
@@ -102,7 +107,7 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
   )
 }
 
-function CommentRow({ com, onOpenMember }: { com: Comment; onOpenMember: (id: string) => void }) {
+function CommentRow({ com, onOpenMember, onDelete }: { com: Comment; onOpenMember: (id: string) => void; onDelete: () => void }) {
   const mine = com.author === 'me'
   return (
     <div style={{ display: 'flex', gap: 10 }}>
@@ -117,7 +122,12 @@ function CommentRow({ com, onOpenMember }: { com: Comment; onOpenMember: (id: st
           </div>
           <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#3A2B5C', lineHeight: 1.4 }}>{com.text}</div>
         </div>
-        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#C3BBD6', padding: '3px 0 0 6px' }}>{relativeTime(com.at)}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '3px 0 0 6px' }}>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 11, color: '#C3BBD6' }}>{relativeTime(com.at)}</span>
+          {mine && (
+            <button onClick={onDelete} style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#C3BBD6', padding: 0 }}>Delete</button>
+          )}
+        </div>
       </div>
     </div>
   )

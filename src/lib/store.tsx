@@ -402,12 +402,33 @@ export const actions = {
     commit({ ...data, comments: { ...data.comments, [feedId]: [...(data.comments[feedId] ?? []), com] } })
   },
 
+  // Remove a comment you authored (from any post). Seeded community comments are protected.
+  deleteComment(feedId: string, commentId: string) {
+    const { data } = current
+    if (!data) return
+    const list = data.comments[feedId] ?? []
+    if (!list.some((c) => c.id === commentId && c.author === 'me')) return
+    commit({ ...data, comments: { ...data.comments, [feedId]: list.filter((c) => c.id !== commentId) } }, { toast: 'Comment deleted' })
+  },
+
   post(input: { type: PostType; text: string; circleId?: string }) {
     const { data, account } = current
     if (!data || !account || !input.text.trim()) return
     const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim(), circleId: input.circleId })
     commit({ ...data, feed: [entry, ...data.feed], xp: data.xp + 20 }, { toast: input.circleId ? 'Posted to your circle ✨' : 'Shared with your squad ✨' })
     scheduleSupport(entry.id)
+  },
+
+  // Remove a post you authored, plus its comments/reactions. Only your own feed entries.
+  deletePost(feedId: string) {
+    const { data } = current
+    if (!data) return
+    const entry = data.feed.find((e) => e.id === feedId)
+    if (!entry || entry.author !== 'me') return
+    const comments = { ...data.comments }; delete comments[feedId]
+    const reactions = { ...data.reactions }; delete reactions[feedId]
+    const cheers = { ...data.cheers }; delete cheers[feedId]
+    commit({ ...data, feed: data.feed.filter((e) => e.id !== feedId), comments, reactions, cheers }, { toast: 'Post deleted' })
   },
 
   cheerMember(name: string) {
