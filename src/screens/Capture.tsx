@@ -4,6 +4,7 @@ import { frameFromVideo, dataUrlFromFile } from '../lib/image'
 import { mealTypeFor } from '../lib/selectors'
 import { num } from '../lib/format'
 import { actions } from '../lib/store'
+import { analyzeMeal, analyzerAvailable } from '../lib/analyze'
 import type { LoggedFood, MealType } from '../lib/types'
 
 const MEAL_TYPES: { id: MealType; label: string }[] = [
@@ -26,11 +27,38 @@ function toLogged(food: Food, servings: number): LoggedFood {
   }
 }
 
+// Fold analyzer-detected items into whatever is already logged, summing servings
+// for foods that appear in both.
+function mergeDetected(prev: LoggedFood[], detected: LoggedFood[]): LoggedFood[] {
+  const byId = new Map(prev.map((i) => [i.foodId, i]))
+  for (const d of detected) {
+    const existing = byId.get(d.foodId)
+    byId.set(d.foodId, existing ? toLogged(FOOD_BY_ID[d.foodId], existing.servings + d.servings) : d)
+  }
+  return [...byId.values()]
+}
+
 export function Capture({ onClose }: { onClose: () => void }) {
   const [stage, setStage] = useState<'view' | 'log'>('view')
   const [photo, setPhoto] = useState<string | undefined>()
   const [items, setItems] = useState<LoggedFood[]>([])
   const [type, setType] = useState<MealType>(mealTypeFor())
+  const [analyzing, setAnalyzing] = useState(false)
+
+  // A snapped photo goes straight to the log screen, then (if the backend is
+  // configured) gets analyzed in the background and its results pre-filled.
+  async function onCaptured(p: string) {
+    setPhoto(p)
+    setStage('log')
+    if (!analyzerAvailable()) return
+    setAnalyzing(true)
+    try {
+      const detected = await analyzeMeal(p)
+      if (detected.length) setItems((prev) => mergeDetected(prev, detected))
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   function addFood(food: Food) {
     setItems((prev) => {
@@ -67,7 +95,7 @@ export function Capture({ onClose }: { onClose: () => void }) {
       {stage === 'view' ? (
         <Viewfinder
           onClose={onClose}
-          onCaptured={(p) => { setPhoto(p); setStage('log') }}
+          onCaptured={onCaptured}
           onManual={() => { setPhoto(undefined); setStage('log') }}
         />
       ) : (
@@ -77,6 +105,7 @@ export function Capture({ onClose }: { onClose: () => void }) {
           setType={setType}
           items={items}
           totals={totals}
+          analyzing={analyzing}
           onRetake={() => setStage('view')}
           onClose={onClose}
           addFood={addFood}
@@ -100,7 +129,8 @@ function Viewfinder({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [live, setLive] = useState(false)
+  const [status, setStatus] = useState<'loading' | 'live' | 'off'>('loading')
+  const live = status === 'live'
 
   useEffect(() => {
     let stream: MediaStream | null = null
@@ -112,13 +142,15 @@ function Viewfinder({
           stream.getTracks().forEach((t) => t.stop())
           return
         }
+        // The <video> is always mounted (see render), so the ref exists here and
+        // the feed attaches right away instead of being stuck behind the placeholder.
         if (videoRef.current) {
           videoRef.current.srcObject = stream
           await videoRef.current.play().catch(() => {})
-          setLive(true)
         }
+        setStatus('live')
       } catch {
-        setLive(false) // permission denied / unavailable → use the fallback
+        setStatus('off') // permission denied / unavailable → manual fallback
       }
     }
     start()
@@ -162,9 +194,8 @@ function Viewfinder({
 
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
         <div style={{ position: 'relative', width: 300, height: 300 }}>
-          {live ? (
-            <video ref={videoRef} playsInline muted style={{ position: 'absolute', inset: 18, width: 'calc(100% - 36px)', height: 'calc(100% - 36px)', objectFit: 'cover', borderRadius: 24, background: '#000' }} />
-          ) : (
+          <video ref={videoRef} playsInline muted autoPlay style={{ position: 'absolute', inset: 18, width: 'calc(100% - 36px)', height: 'calc(100% - 36px)', objectFit: 'cover', borderRadius: 24, background: '#000', opacity: live ? 1 : 0, transition: 'opacity .25s ease' }} />
+          {!live && (
             <div style={{ position: 'absolute', inset: 18 }}>
               <div style={{ position: 'absolute', inset: 18, borderRadius: '50%', background: 'radial-gradient(circle at 40% 35%,#FFFFFF,#EFE9F5)', boxShadow: '0 20px 50px rgba(0,0,0,.4)' }} />
               <div style={{ position: 'absolute', left: 70, top: 92, width: 88, height: 64, borderRadius: '40% 40% 45% 45%', background: 'linear-gradient(135deg,#E8A65C,#C9763A)' }} />
@@ -181,7 +212,7 @@ function Viewfinder({
       </div>
 
       <div style={{ textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.7)', padding: '0 40px 22px' }}>
-        {live ? 'Center your plate in the frame, then tap to capture.' : 'Snap a photo or log it manually, your call.'}
+        {live ? 'Center your plate in the frame, then tap to capture.' : status === 'loading' ? 'Starting camera...' : 'Snap a photo or log it manually, your call.'}
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, padding: '0 0 46px' }}>
@@ -202,7 +233,7 @@ function Viewfinder({
 
 // ── Log / food search ─────────────────────────────────────────────────────────
 function LogScreen({
-  photo, type, setType, items, totals, onRetake, onClose, addFood, setServings, onSave,
+  photo, type, setType, items, totals, onRetake, onClose, addFood, setServings, onSave, analyzing,
 }: {
   photo?: string
   type: MealType
@@ -214,6 +245,7 @@ function LogScreen({
   addFood: (f: Food) => void
   setServings: (id: string, s: number) => void
   onSave: () => void
+  analyzing?: boolean
 }) {
   const [query, setQuery] = useState('')
   const results = useMemo(() => searchFoods(query, 24), [query])
@@ -234,6 +266,12 @@ function LogScreen({
       </div>
 
       <div style={{ padding: '16px 18px 150px' }}>
+        {analyzing && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'linear-gradient(135deg,#7C3AF6,#9B5CFF)', borderRadius: 16, padding: '12px 14px', marginBottom: 14, boxShadow: '0 6px 16px rgba(124,58,246,.22)' }}>
+            <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,.4)', borderTopColor: '#fff', display: 'inline-block', animation: 'pep-spin .8s linear infinite', flex: 'none' }} />
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#fff' }}>Reading your plate, this takes a sec...</span>
+          </div>
+        )}
         {/* meal type */}
         <div style={{ display: 'flex', gap: 6, background: '#EDE6FA', borderRadius: 16, padding: 4, marginBottom: 16 }}>
           {MEAL_TYPES.map((m) => (
