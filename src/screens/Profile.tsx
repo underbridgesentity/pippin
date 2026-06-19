@@ -4,11 +4,12 @@ import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
 import { num } from '../lib/format'
+import type { WeightEntry } from '../lib/types'
 
 export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings: () => void; onShareWin: () => void; onSnap: () => void }) {
-  const { account } = useStore()
+  const { account, data } = useStore()
   const d = useDerived()
-  if (!account || !d) return null
+  if (!account || !d || !data) return null
 
   const stats = [
     { value: num(d.streak), label: 'Day streak', color: '#FF8A1E' },
@@ -70,6 +71,9 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
           </div>
         ))}
       </div>
+
+      {/* weight progress */}
+      <WeightCard weights={data.weights} onSetup={onOpenSettings} />
 
       {/* community impact, celebrating generosity, not just personal metrics */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
@@ -172,5 +176,61 @@ function Stage({ name, state, isLast }: { name: string; state: 'done' | 'current
       </div>
       {!isLast && <div style={{ width: 18, height: 2, background: '#E3DAF5', flex: 'none', marginBottom: 18 }} />}
     </>
+  )
+}
+
+function WeightCard({ weights, onSetup }: { weights: WeightEntry[]; onSetup: () => void }) {
+  if (weights.length === 0) {
+    return (
+      <button onClick={onSetup} className="pressable" style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 20, padding: 16, marginBottom: 16, cursor: 'pointer', boxShadow: '0 5px 14px rgba(120,60,180,.06)' }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: '#EFE7FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>⚖️</div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Track your weight</div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: '#6E6596', lineHeight: 1.3 }}>Add your height & weight for a personalized calorie target and a progress trend.</div>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AF6" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+      </button>
+    )
+  }
+
+  const current = weights[weights.length - 1].kg
+  const change = Math.round((current - weights[0].kg) * 10) / 10
+  const kgs = weights.map((w) => w.kg)
+  const min = Math.min(...kgs)
+  const range = Math.max(...kgs) - min || 1
+  const W = 300
+  const H = 44
+  const pts = weights.map((w, i) => {
+    const x = weights.length === 1 ? W / 2 : (i / (weights.length - 1)) * W
+    const y = H - ((w.kg - min) / range) * (H - 6) - 3
+    return { x, y }
+  })
+  const path = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
+  const dropped = change < 0
+  const trendColor = dropped ? '#18C98A' : change > 0 ? '#FF8A1E' : '#9B91B8'
+
+  return (
+    <button onClick={onSetup} className="pressable" style={{ width: '100%', textAlign: 'left', display: 'block', background: '#fff', border: 'none', borderRadius: 20, padding: 16, marginBottom: 16, cursor: 'pointer', boxShadow: '0 5px 14px rgba(120,60,180,.06)' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
+        <div>
+          <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Weight </span>
+          <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{current}</span>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}> kg</span>
+        </div>
+        {weights.length > 1 && (
+          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: trendColor, background: dropped ? '#E2F8EF' : change > 0 ? '#FFF0DC' : '#F1ECFA', padding: '4px 10px', borderRadius: 12 }}>
+            {change > 0 ? '+' : ''}{change} kg
+          </span>
+        )}
+      </div>
+      {weights.length > 1 ? (
+        <svg viewBox={`0 0 ${W} ${H}`} width="100%" height={H} preserveAspectRatio="none">
+          <polyline points={path} fill="none" stroke={trendColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+          <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="3.5" fill={trendColor} />
+        </svg>
+      ) : (
+        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: '#6E6596' }}>Update your weight in Settings to see your progress trend.</div>
+      )}
+    </button>
   )
 }

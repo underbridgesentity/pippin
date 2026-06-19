@@ -21,6 +21,21 @@ export type Settings = {
   stepsTarget: number
 }
 
+export type Sex = 'male' | 'female' | 'other'
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'athlete'
+
+/** Body stats used to personalize the calorie target and track progress. */
+export type Body = {
+  heightCm: number
+  weightKg: number
+  age: number
+  sex: Sex
+  activity: ActivityLevel
+}
+
+/** One weigh-in, for the progress trend. */
+export type WeightEntry = { at: number; kg: number }
+
 export type Macros = {
   protein: number
   carbs: number
@@ -119,6 +134,10 @@ export type FeedEntry = {
 export type UserState = {
   goal: Goal
   settings: Settings
+  /** body stats for a personalized calorie target (optional until the user sets them) */
+  body?: Body
+  /** weigh-in history, oldest first */
+  weights: WeightEntry[]
   /** total lifetime XP, level & stage are derived from this */
   xp: number
   meals: MealEntry[]

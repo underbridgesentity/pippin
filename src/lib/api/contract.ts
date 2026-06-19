@@ -72,6 +72,7 @@ export function defaultState(goal: Goal, now: number): UserState {
   return {
     goal,
     settings: { ...DEFAULT_SETTINGS, calorieTarget: calorieTargetForGoal(goal) },
+    weights: [],
     xp: 0,
     meals: [],
     activities: [],
@@ -104,6 +105,7 @@ export function normalize(s: UserState): UserState {
     friends: s.friends ?? [],
     circles: s.circles ?? [],
     checkIns: s.checkIns ?? [],
+    weights: s.weights ?? [],
   }
 }
 

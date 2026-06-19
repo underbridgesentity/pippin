@@ -10,9 +10,11 @@ import { BADGES, XP, earnedBadges, estimateBurn, levelFromXp, stepsToKm } from '
 import { CIRCLE_BADGE_BY_ID, earnedCircleBadges } from './selectors'
 import { CHALLENGE_BY_ID, CIRCLE_BY_ID, MEMBER_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
 import { dayKey, todayKey } from './format'
+import { recommendedCalories } from './nutrition'
 import type {
   Account,
   ActivityKind,
+  Body,
   BuddyCheckIn,
   CheckIn,
   Comment,
@@ -478,7 +480,21 @@ export const actions = {
   updateGoal(goal: Goal) {
     const { data } = current
     if (!data) return
-    commit({ ...data, goal })
+    // Keep the personalized target in step with the goal once body stats exist.
+    const settings = data.body ? { ...data.settings, calorieTarget: recommendedCalories(data.body, goal) } : data.settings
+    commit({ ...data, goal, settings })
+  },
+
+  // Save body stats; recompute the calorie target and log the weight if it changed.
+  saveBody(body: Body) {
+    const { data } = current
+    if (!data) return
+    const calorieTarget = recommendedCalories(body, data.goal)
+    const last = data.weights[data.weights.length - 1]
+    const weights = !last || Math.abs(last.kg - body.weightKg) >= 0.1
+      ? [...data.weights, { at: Date.now(), kg: body.weightKg }]
+      : data.weights
+    commit({ ...data, body, weights, settings: { ...data.settings, calorieTarget } }, { toast: `Target set to ${calorieTarget} kcal/day` })
   },
 
   async updateProfile(patch: { name?: string }) {
