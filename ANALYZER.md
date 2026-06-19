@@ -1,9 +1,14 @@
 # Meal photo analyzer (Gemini 2.5 Flash-Lite)
 
-When a user snaps a meal, Fettle can identify the foods on the plate and pre-fill
-them on the log screen for the user to confirm or edit. The user always reviews
-before saving, and the bundled food database stays the source of truth for the
-calorie and macro numbers, the model only does recognition.
+When a user snaps a meal, Fettle identifies the foods on the plate and estimates
+their calories, then pre-fills them on the log screen for the user to confirm or
+edit. It works for ANY meal, not just a fixed list: combinations (eggs and
+toast), home-cooked plates, and packaged items (it reads a visible nutrition
+label). The user always reviews before saving.
+
+Calorie source is a hybrid: when a detected food clearly matches one in the
+bundled food database, the app's exact numbers are used; everything else carries
+the model's best estimate (shown as "AI estimate" on the item).
 
 It is **off by default** and degrades gracefully: if it is not turned on, or the
 call fails, the user just logs the meal by hand (the normal flow).
@@ -13,9 +18,11 @@ call fails, the user just logs the meal by hand (the normal flow).
 ```
 Capture photo (downscaled in the browser)
    -> POST /functions/v1/analyze-meal   (Supabase Edge Function, holds the key)
-       -> Gemini 2.5 Flash-Lite, constrained to Fettle's food catalog
-   <- { items: [{ id, servings }] }      (ids that exist in the catalog only)
-Client maps ids -> bundled food DB -> pre-fills the log screen
+       -> Gemini 2.5 Flash-Lite: identify every food/drink + estimate kcal+macros
+          (the food DB is passed only as a hint for exact-match `catalogId`s)
+   <- { items: [{ name, emoji, servings, kcal, protein, carbs, fat, catalogId? }] }
+Client: catalogId match -> exact DB numbers; otherwise -> AI estimate.
+        Pre-fills the log screen for review.
 ```
 
 The Gemini API key never reaches the browser. The client calls the Edge Function

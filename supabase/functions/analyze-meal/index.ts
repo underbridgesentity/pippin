@@ -1,15 +1,19 @@
 // Supabase Edge Function: analyze-meal
 //
-// Identifies foods in a meal photo using Gemini 2.5 Flash-Lite, constrained to
-// the app's food catalog (sent by the client). The Gemini API key never leaves
-// the server. On any error it returns 200 with an empty list so the app falls
-// back to manual logging instead of breaking.
+// Identifies the foods and drinks in a meal photo using Gemini 2.5 Flash-Lite
+// and estimates the calories + macros for each, for ANY meal — combinations,
+// home-cooked plates, and packaged items (it reads visible nutrition labels).
+// It is NOT limited to the app's food list: that list is passed only as a hint,
+// so a detected food that clearly matches a known food comes back with a
+// `catalogId` (the client then uses the app's exact numbers); everything else
+// comes back as the model's best estimate.
+//
+// The Gemini API key never leaves the server. On any error it returns 200 with
+// an empty list so the app falls back to manual logging instead of breaking.
 //
 // Setup:
 //   supabase secrets set GEMINI_API_KEY=your_google_ai_studio_key
 //   supabase functions deploy analyze-meal
-//
-// The client calls it with the Supabase anon key as a bearer token.
 
 const MODEL = 'gemini-2.5-flash-lite'
 const ENDPOINT = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`
@@ -32,6 +36,11 @@ function splitDataUrl(image: string): { mimeType: string; data: string } {
   return { mimeType: 'image/jpeg', data: image }
 }
 
+function clampNum(v: unknown, min: number): number {
+  const n = Math.round(Number(v))
+  return Number.isFinite(n) ? Math.max(min, n) : min
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'method not allowed', items: [] }, 405)
@@ -47,21 +56,28 @@ Deno.serve(async (req) => {
   }
 
   const { image, catalog } = body
-  if (!image || !catalog?.length) return json({ items: [] })
+  if (!image) return json({ items: [] })
 
-  const ids = new Set(catalog.map((c) => c.id))
-  const list = catalog.map((c) => `- ${c.id}: ${c.name} (1 serving = ${c.serving})`).join('\n')
+  const known = catalog ?? []
+  const ids = new Set(known.map((c) => c.id))
+  const list = known.map((c) => `- ${c.id}: ${c.name} (1 serving = ${c.serving})`).join('\n')
   const { mimeType, data } = splitDataUrl(image)
 
-  const prompt = `You are a nutrition assistant for a food-logging app. The user photographed a meal.
-From the CATALOG below, identify which foods appear in the photo and estimate how many servings of each are on the plate (a serving is the amount shown in parentheses).
-Rules:
-- Only use ids that appear in the catalog.
-- If a visible food has no close match in the catalog, skip it.
-- If the image shows no food, return an empty list.
-- Estimate servings as a positive number; use 1 when unsure.
+  const prompt = `You are a nutrition assistant for a food-logging app. Identify EVERY distinct food and drink visible in the photo. Be thorough:
+- List each item separately, including combinations on one plate (e.g. eggs AND toast, or avocado AND tomato).
+- Include packaged or branded items. If a nutrition label or packaging is visible, read it and use those numbers.
+- Include drinks.
 
-CATALOG:
+For each item, estimate the portion actually shown and its nutrition FOR THAT PORTION:
+- servings: how many portions of this item are shown (default 1).
+- kcal: calories for the shown portion.
+- protein, carbs, fat: grams for the shown portion.
+- emoji: one fitting emoji for the item.
+- catalogId: set this ONLY if the item clearly matches one of the KNOWN FOODS listed below (use that food's id so we can apply our exact data). Otherwise omit catalogId and give your own best estimate.
+
+Be realistic and give your best estimate rather than skipping an item. If the image shows no food or drink at all, return an empty list.
+
+KNOWN FOODS (for catalogId matching only — you are NOT limited to these):
 ${list}`
 
   const payload = {
@@ -75,8 +91,17 @@ ${list}`
             type: 'ARRAY',
             items: {
               type: 'OBJECT',
-              properties: { id: { type: 'STRING' }, servings: { type: 'NUMBER' } },
-              required: ['id', 'servings'],
+              properties: {
+                name: { type: 'STRING' },
+                emoji: { type: 'STRING' },
+                servings: { type: 'NUMBER' },
+                kcal: { type: 'NUMBER' },
+                protein: { type: 'NUMBER' },
+                carbs: { type: 'NUMBER' },
+                fat: { type: 'NUMBER' },
+                catalogId: { type: 'STRING' },
+              },
+              required: ['name', 'servings', 'kcal', 'protein', 'carbs', 'fat'],
             },
           },
         },
@@ -94,10 +119,19 @@ ${list}`
     if (!r.ok) return json({ error: `gemini ${r.status}`, items: [] })
     const out = await r.json()
     const text: string = out?.candidates?.[0]?.content?.parts?.[0]?.text ?? '{"items":[]}'
-    const parsed = JSON.parse(text) as { items?: { id: string; servings: number }[] }
+    const parsed = JSON.parse(text) as { items?: Array<Record<string, unknown>> }
     const items = (parsed.items ?? [])
-      .filter((i) => ids.has(i.id))
-      .map((i) => ({ id: i.id, servings: Math.max(1, Math.round(i.servings || 1)) }))
+      .map((i) => ({
+        name: String(i.name ?? '').trim().slice(0, 80),
+        emoji: typeof i.emoji === 'string' ? i.emoji.slice(0, 8) : '',
+        servings: clampNum(i.servings, 1),
+        kcal: clampNum(i.kcal, 0),
+        protein: clampNum(i.protein, 0),
+        carbs: clampNum(i.carbs, 0),
+        fat: clampNum(i.fat, 0),
+        catalogId: typeof i.catalogId === 'string' && ids.has(i.catalogId) ? i.catalogId : undefined,
+      }))
+      .filter((i) => i.name)
     return json({ items })
   } catch (e) {
     return json({ error: String(e), items: [] })

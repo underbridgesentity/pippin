@@ -32,8 +32,11 @@ function toLogged(food: Food, servings: number): LoggedFood {
 function mergeDetected(prev: LoggedFood[], detected: LoggedFood[]): LoggedFood[] {
   const byId = new Map(prev.map((i) => [i.foodId, i]))
   for (const d of detected) {
-    const existing = byId.get(d.foodId)
-    byId.set(d.foodId, existing ? toLogged(FOOD_BY_ID[d.foodId], existing.servings + d.servings) : d)
+    const e = byId.get(d.foodId)
+    // Both carry totals for their own servings, so combining duplicates is a sum.
+    byId.set(d.foodId, e
+      ? { ...e, servings: e.servings + d.servings, kcal: e.kcal + d.kcal, protein: e.protein + d.protein, carbs: e.carbs + d.carbs, fat: e.fat + d.fat }
+      : d)
   }
   return [...byId.values()]
 }
@@ -81,8 +84,13 @@ export function Capture({ onClose }: { onClose: () => void }) {
   function setServings(foodId: string, servings: number) {
     setItems((prev) => {
       if (servings <= 0) return prev.filter((x) => x.foodId !== foodId)
-      const food = FOOD_BY_ID[foodId]
-      return prev.map((x) => (x.foodId === foodId ? toLogged(food, servings) : x))
+      return prev.map((x) => {
+        if (x.foodId !== foodId) return x
+        const food = FOOD_BY_ID[foodId]
+        if (food) return toLogged(food, servings) // catalog food: exact per-serving data
+        const k = servings / x.servings // AI-estimated food: scale its own numbers
+        return { ...x, servings, kcal: Math.round(x.kcal * k), protein: Math.round(x.protein * k), carbs: Math.round(x.carbs * k), fat: Math.round(x.fat * k) }
+      })
     })
   }
 
@@ -334,7 +342,7 @@ function LogScreen({
                 <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F4EFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{it.emoji}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.name}</div>
-                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{it.kcal} kcal · {FOOD_BY_ID[it.foodId]?.serving}</div>
+                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{it.kcal} kcal · {FOOD_BY_ID[it.foodId]?.serving ?? 'AI estimate'}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Stepper onClick={() => setServings(it.foodId, it.servings - 1)} label="−" />

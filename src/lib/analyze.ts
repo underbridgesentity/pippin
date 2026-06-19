@@ -21,25 +21,66 @@ export function analyzerAvailable(): boolean {
   return Boolean(url && key && import.meta.env.VITE_MEAL_ANALYZER === 'on')
 }
 
-type Detected = { id: string; servings: number }
+// One food the analyzer detected. catalogId is set only when it confidently
+// matches a known food (then we use the app's exact numbers); otherwise the
+// kcal/macros are the model's estimate for any arbitrary food.
+type Detected = {
+  name: string
+  emoji?: string
+  servings?: number
+  kcal?: number
+  protein?: number
+  carbs?: number
+  fat?: number
+  catalogId?: string
+}
 
-function toLogged(foodId: string, servings: number): LoggedFood | null {
+function nn(v: unknown): number {
+  const n = Math.round(Number(v))
+  return Number.isFinite(n) ? Math.max(0, n) : 0
+}
+
+function fromCatalog(foodId: string, servings: number): LoggedFood {
   const food = FOOD_BY_ID[foodId]
-  if (!food) return null
-  const s = Math.max(1, Math.round(servings || 1))
   return {
     foodId: food.id,
     name: food.name,
     emoji: food.emoji,
-    servings: s,
-    kcal: Math.round(food.kcal * s),
-    protein: Math.round(food.protein * s),
-    carbs: Math.round(food.carbs * s),
-    fat: Math.round(food.fat * s),
+    servings,
+    kcal: Math.round(food.kcal * servings),
+    protein: Math.round(food.protein * servings),
+    carbs: Math.round(food.carbs * servings),
+    fat: Math.round(food.fat * servings),
   }
 }
 
-/** Identify catalog foods in a meal photo. Always resolves (never throws). */
+function slug(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 40) || 'food'
+}
+
+function toLogged(d: Detected): LoggedFood | null {
+  const servings = Math.max(1, Math.round(Number(d.servings) || 1))
+  // Confident match to a known food -> use the app's exact nutrition data.
+  if (d.catalogId && FOOD_BY_ID[d.catalogId]) return fromCatalog(d.catalogId, servings)
+  // Otherwise, an arbitrary food carrying the model's own estimate.
+  const name = (d.name || '').trim()
+  if (!name) return null
+  return {
+    foodId: `ai:${slug(name)}`,
+    name,
+    emoji: d.emoji || '🍽️',
+    servings,
+    kcal: nn(d.kcal),
+    protein: nn(d.protein),
+    carbs: nn(d.carbs),
+    fat: nn(d.fat),
+  }
+}
+
+/**
+ * Identify the foods in a meal photo and estimate their calories. Works for any
+ * meal, not just catalog foods. Always resolves (never throws).
+ */
 export async function analyzeMeal(imageDataUrl: string): Promise<LoggedFood[]> {
   if (!url || !key) return []
   try {
@@ -52,7 +93,7 @@ export async function analyzeMeal(imageDataUrl: string): Promise<LoggedFood[]> {
     if (!res.ok) return []
     const data = (await res.json()) as { items?: Detected[] }
     return (data.items ?? [])
-      .map((d) => toLogged(d.id, d.servings))
+      .map(toLogged)
       .filter((x): x is LoggedFood => x !== null)
   } catch {
     return []
