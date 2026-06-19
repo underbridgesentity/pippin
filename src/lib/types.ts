@@ -138,6 +138,10 @@ export type UserState = {
   body?: Body
   /** weigh-in history, oldest first */
   weights: WeightEntry[]
+  /** daily trackers, keyed by ISO day (YYYY-MM-DD) */
+  water: Record<string, number>
+  sleep: Record<string, number>
+  moods: Record<string, Mood>
   /** total lifetime XP, level & stage are derived from this */
   xp: number
   meals: MealEntry[]

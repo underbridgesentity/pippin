@@ -498,6 +498,28 @@ export const actions = {
     commit({ ...data, settings: { ...data.settings, ...patch } }, { toast: 'Settings saved' })
   },
 
+  // ── daily trackers (keyed by ISO day) ───────────────────────────────────────
+  logWater(delta: number) {
+    const { data } = current
+    if (!data) return
+    const day = dayKey(Date.now())
+    const next = Math.max(0, Math.min(20, (data.water[day] ?? 0) + delta))
+    commit({ ...data, water: { ...data.water, [day]: next } })
+  },
+  setSleep(hours: number) {
+    const { data } = current
+    if (!data) return
+    const day = dayKey(Date.now())
+    const next = Math.max(0, Math.min(16, Math.round(hours * 2) / 2))
+    commit({ ...data, sleep: { ...data.sleep, [day]: next } })
+  },
+  setMood(mood: Mood) {
+    const { data } = current
+    if (!data) return
+    const day = dayKey(Date.now())
+    commit({ ...data, moods: { ...data.moods, [day]: mood } })
+  },
+
   updateGoal(goal: Goal) {
     const { data } = current
     if (!data) return

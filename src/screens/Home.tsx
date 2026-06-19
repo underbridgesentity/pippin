@@ -7,9 +7,16 @@ import { useStore, actions } from '../lib/store'
 import { useDerived, useFeed } from '../lib/hooks'
 import { REACTION_BY_KIND } from '../lib/social'
 import { coachAvailable, cachedPlan, fetchCoachPlan, type CoachCtx } from '../lib/coach'
-import { firstName, greeting, longDate, num, relativeTime } from '../lib/format'
+import { dayKey, firstName, greeting, longDate, num, relativeTime } from '../lib/format'
 import type { DecoratedFeed } from '../lib/selectors'
-import type { Goal, MealEntry, ReactionKind } from '../lib/types'
+import type { Goal, MealEntry, Mood, ReactionKind } from '../lib/types'
+
+const WATER_GOAL = 8
+const MOODS: { id: Mood; emoji: string }[] = [
+  { id: 'great', emoji: '😄' },
+  { id: 'ok', emoji: '🙂' },
+  { id: 'tough', emoji: '😣' },
+]
 
 const GOAL_LABEL: Record<Goal, string> = {
   lose: 'Lose weight',
@@ -134,6 +141,13 @@ export function Home({
           </div>
         </div>
       </div>
+
+      {/* daily trackers */}
+      <TrackersCard
+        cups={data.water[dayKey(now)] ?? 0}
+        sleepHrs={data.sleep[dayKey(now)]}
+        mood={data.moods[dayKey(now)]}
+      />
 
       {/* daily quest */}
       <div style={{ background: 'linear-gradient(135deg,#7C3AF6,#9B5CFF)', borderRadius: 24, padding: '16px 18px', marginBottom: 14, boxShadow: '0 8px 20px rgba(124,58,246,.3)', position: 'relative', overflow: 'hidden' }}>
@@ -276,6 +290,48 @@ function CoachCard({ ctx }: { ctx: CoachCtx }) {
     </div>
   )
 }
+
+function TrackersCard({ cups, sleepHrs, mood }: { cups: number; sleepHrs?: number; mood?: Mood }) {
+  return (
+    <div style={{ background: '#fff', borderRadius: 24, padding: '14px 16px', marginBottom: 14, boxShadow: '0 6px 16px rgba(120,60,180,.07)' }}>
+      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, color: '#241544', marginBottom: 6, paddingLeft: 2 }}>Daily check-in</div>
+      <TrackRow icon="💧" label="Water" value={`${cups} / ${WATER_GOAL}`} unit="cups" onMinus={() => actions.logWater(-1)} onPlus={() => actions.logWater(1)} border />
+      <TrackRow icon="😴" label="Sleep" value={sleepHrs != null ? String(sleepHrs) : '—'} unit="hrs" onMinus={() => actions.setSleep((sleepHrs ?? 7.5) - 0.5)} onPlus={() => actions.setSleep((sleepHrs ?? 7) + 0.5)} border />
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 0 3px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 18 }}>🧘</span>
+          <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14.5, color: '#241544' }}>Mood</span>
+        </div>
+        <div style={{ display: 'flex', gap: 6 }}>
+          {MOODS.map((m) => {
+            const on = mood === m.id
+            return (
+              <button key={m.id} onClick={() => actions.setMood(m.id)} style={{ width: 38, height: 32, borderRadius: 11, background: on ? '#EFE7FF' : '#F4EFFF', border: `2px solid ${on ? '#7C3AF6' : 'transparent'}`, cursor: 'pointer', fontSize: 17, lineHeight: 1, filter: on ? 'none' : 'grayscale(0.4)', opacity: on ? 1 : 0.7 }}>{m.emoji}</button>
+            )
+          })}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TrackRow({ icon, label, value, unit, onMinus, onPlus, border }: { icon: string; label: string; value: string; unit: string; onMinus: () => void; onPlus: () => void; border?: boolean }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '11px 0', borderBottom: border ? '1px solid #F2ECFB' : 'none' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <span style={{ fontSize: 18 }}>{icon}</span>
+        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14.5, color: '#241544' }}>{label}</span>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <button onClick={onMinus} style={tStep} aria-label={`Less ${label}`}>−</button>
+        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#241544', minWidth: 64, textAlign: 'center' }}>{value} <span style={{ fontSize: 11, fontWeight: 700, color: '#6E6596' }}>{unit}</span></span>
+        <button onClick={onPlus} style={tStep} aria-label={`More ${label}`}>+</button>
+      </div>
+    </div>
+  )
+}
+
+const tStep: React.CSSProperties = { width: 30, height: 30, borderRadius: 10, background: '#F1ECFA', border: 'none', cursor: 'pointer', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#7C3AF6', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1, flex: 'none' }
 
 function CoachBlock({ label, children }: { label: string; children: React.ReactNode }) {
   return (
