@@ -47,12 +47,10 @@ with the Supabase anon key.
 
    (Source: [`supabase/functions/analyze-meal/index.ts`](supabase/functions/analyze-meal/index.ts).)
 
-4. **Turn the feature on** by setting `VITE_MEAL_ANALYZER=on`:
-   - Locally: add it to `.env.local` and restart `npm run dev`.
-   - Production: add it in Vercel -> Settings -> Environment Variables, then redeploy.
-
-That is it. With the flag off (or unset), the analyzer stays dormant and the app
-behaves exactly as before.
+That is it. The analyzer runs automatically whenever Supabase is configured.
+If the function is not deployed or a call fails, it returns nothing and the app
+falls back to manual logging, so nothing breaks. (An earlier `VITE_MEAL_ANALYZER`
+flag is no longer used and can be removed from your env.)
 
 ## Cost
 

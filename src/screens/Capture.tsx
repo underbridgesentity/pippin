@@ -118,19 +118,20 @@ export function Capture({ onClose }: { onClose: () => void }) {
         <Analyzing photo={photo} onManual={() => { setDetected(null); setStage('log') }} />
       )}
       {stage === 'log' && (
-        <LogScreen
-          photo={photo}
-          type={type}
-          setType={setType}
-          items={items}
-          totals={totals}
-          detected={detected}
-          onRetake={() => setStage('view')}
-          onClose={onClose}
-          addFood={addFood}
-          setServings={setServings}
-          onSave={save}
-        />
+        <>
+          <LogScreen
+            photo={photo}
+            type={type}
+            setType={setType}
+            items={items}
+            detected={detected}
+            onRetake={() => setStage('view')}
+            onClose={onClose}
+            addFood={addFood}
+            setServings={setServings}
+          />
+          <SaveFooter items={items} totals={totals} onSave={save} />
+        </>
       )}
     </div>
   )
@@ -272,18 +273,16 @@ function Analyzing({ photo, onManual }: { photo: string; onManual: () => void })
 
 // ── Log / food search ─────────────────────────────────────────────────────────
 function LogScreen({
-  photo, type, setType, items, totals, onRetake, onClose, addFood, setServings, onSave, detected,
+  photo, type, setType, items, onRetake, onClose, addFood, setServings, detected,
 }: {
   photo?: string
   type: MealType
   setType: (t: MealType) => void
   items: LoggedFood[]
-  totals: { kcal: number; protein: number; carbs: number; fat: number }
   onRetake: () => void
   onClose: () => void
   addFood: (f: Food) => void
   setServings: (id: string, s: number) => void
-  onSave: () => void
   detected?: number | null
 }) {
   const [query, setQuery] = useState('')
@@ -304,7 +303,7 @@ function LogScreen({
         </button>
       </div>
 
-      <div style={{ padding: '16px 18px 150px' }}>
+      <div style={{ padding: '16px 18px 24px' }}>
         {detected != null && detected > 0 && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#E2F8EF', borderRadius: 16, padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>✨</span>
@@ -398,24 +397,29 @@ function LogScreen({
           )}
         </div>
       </div>
+    </div>
+  )
+}
 
-      {/* footer total + log */}
-      <div style={{ position: 'absolute', left: 0, right: 0, bottom: 0, padding: '14px 18px 26px', background: 'linear-gradient(180deg,transparent,#F4EFFF 26%)' }}>
-        {items.length > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 4px' }}>
-            <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{num(totals.kcal)} <span style={{ fontSize: 14, color: '#6E6596' }}>kcal</span></span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>P {totals.protein}g · C {totals.carbs}g · F {totals.fat}g</span>
-          </div>
-        )}
-        <button
-          onClick={onSave}
-          disabled={!items.length}
-          className="pressable"
-          style={{ background: items.length ? '#18C98A' : '#C9BFE0', color: '#fff', border: 'none', borderRadius: 20, padding: 17, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, boxShadow: items.length ? '0 5px 0 #0E9E6C' : 'none', cursor: items.length ? 'pointer' : 'default', width: '100%', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 #0E9E6C' }}
-        >
-          {items.length ? 'Log meal · +45 XP' : 'Add a food to log'}
-        </button>
-      </div>
+// Pinned footer: a non-scrolling flex sibling of the log list, so it stays put
+// at the bottom of the device frame instead of moving with the scroll.
+function SaveFooter({ items, totals, onSave }: { items: LoggedFood[]; totals: { kcal: number; protein: number; carbs: number; fat: number }; onSave: () => void }) {
+  return (
+    <div style={{ flex: 'none', padding: '12px 18px calc(18px + env(safe-area-inset-bottom, 8px))', background: '#F4EFFF', borderTop: '1px solid #E7DEF7', boxShadow: '0 -6px 20px rgba(120,60,180,.07)' }}>
+      {items.length > 0 && (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 4px' }}>
+          <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{num(totals.kcal)} <span style={{ fontSize: 14, color: '#6E6596' }}>kcal</span></span>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>P {totals.protein}g · C {totals.carbs}g · F {totals.fat}g</span>
+        </div>
+      )}
+      <button
+        onClick={onSave}
+        disabled={!items.length}
+        className="pressable"
+        style={{ background: items.length ? '#18C98A' : '#C9BFE0', color: '#fff', border: 'none', borderRadius: 20, padding: 17, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, boxShadow: items.length ? '0 5px 0 #0E9E6C' : 'none', cursor: items.length ? 'pointer' : 'default', width: '100%', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 #0E9E6C' }}
+      >
+        {items.length ? 'Log meal · +45 XP' : 'Add a food to log'}
+      </button>
     </div>
   )
 }

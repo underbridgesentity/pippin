@@ -12,13 +12,12 @@ const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 /**
- * True only when the backend is configured AND the analyzer is explicitly
- * switched on (`VITE_MEAL_ANALYZER=on`). The flag keeps the feature dormant
- * until the `analyze-meal` Edge Function is deployed and the Gemini key is set,
- * so users never see an "analyzing" state that finds nothing.
+ * True when the backend is configured. The `analyze-meal` Edge Function is
+ * deployed, so the analyzer runs whenever Supabase is set; on any failure the
+ * call returns [] and the app falls back to manual logging.
  */
 export function analyzerAvailable(): boolean {
-  return Boolean(url && key && import.meta.env.VITE_MEAL_ANALYZER === 'on')
+  return Boolean(url && key)
 }
 
 // One food the analyzer detected. catalogId is set only when it confidently
