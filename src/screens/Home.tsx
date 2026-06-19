@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Ring } from '../components/Ring'
 import { ProgressBar } from '../components/ProgressBar'
 import { Avatar } from '../components/Avatar'
@@ -6,9 +6,18 @@ import { Mascot } from '../components/Mascot'
 import { useStore, actions } from '../lib/store'
 import { useDerived, useFeed } from '../lib/hooks'
 import { REACTION_BY_KIND } from '../lib/social'
+import { coachAvailable, cachedPlan, fetchCoachPlan, type CoachCtx } from '../lib/coach'
 import { firstName, greeting, longDate, num, relativeTime } from '../lib/format'
 import type { DecoratedFeed } from '../lib/selectors'
-import type { MealEntry, ReactionKind } from '../lib/types'
+import type { Goal, MealEntry, ReactionKind } from '../lib/types'
+
+const GOAL_LABEL: Record<Goal, string> = {
+  lose: 'Lose weight',
+  strong: 'Build strength',
+  eat: 'Eat better',
+  move: 'Move more',
+  feel: 'Feel good',
+}
 
 type Filter = 'all' | 'tip' | 'question' | 'win'
 const FILTERS: { id: Filter; label: string }[] = [
@@ -40,6 +49,22 @@ export function Home({
   const now = d?.now ?? Date.now()
 
   if (!account || !data || !d) return null
+
+  const coachCtx: CoachCtx = {
+    goal: GOAL_LABEL[data.goal],
+    bodyLine: data.body
+      ? `${data.body.heightCm} cm, ${data.body.weightKg} kg, ${data.body.age} yrs, ${data.body.sex}, ${data.body.activity}`
+      : 'stats not provided',
+    calorieTarget: d.caloriesTarget,
+    consumed: d.caloriesConsumed,
+    remaining: d.caloriesRemaining,
+    protein: d.macros.protein,
+    carbs: d.macros.carbs,
+    fat: d.macros.fat,
+    steps: d.steps,
+    stepsTarget: d.stepsTarget,
+    activeMinutes: d.activeMinutes,
+  }
 
   const shown = feed
     .filter((p) => {
@@ -128,6 +153,9 @@ export function Home({
         </div>
       </div>
 
+      {/* AI coach */}
+      <CoachCard ctx={coachCtx} />
+
       {/* today's meals */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 2px' }}>
         <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Today's meals</span>
@@ -174,6 +202,86 @@ export function Home({
       ) : (
         shown.map((p) => <FeedCard key={p.id} post={p} now={now} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />)
       )}
+    </div>
+  )
+}
+
+function CoachCard({ ctx }: { ctx: CoachCtx }) {
+  const ctxRef = useRef(ctx)
+  ctxRef.current = ctx
+  const [plan, setPlan] = useState(() => cachedPlan())
+  const [loading, setLoading] = useState(false)
+  const [tried, setTried] = useState(false)
+
+  async function load(force?: boolean) {
+    if (loading) return
+    const cached = cachedPlan()
+    if (!force && cached) { setPlan(cached); return }
+    setLoading(true)
+    const p = await fetchCoachPlan(ctxRef.current)
+    setPlan(p ?? cached)
+    setLoading(false)
+    setTried(true)
+  }
+  useEffect(() => { if (!cachedPlan()) load() }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (!coachAvailable()) return null
+  if (!plan && tried) return null // generation failed (e.g. function not deployed) -> hide quietly
+
+  return (
+    <div style={{ background: '#fff', borderRadius: 24, padding: 18, marginBottom: 14, boxShadow: '0 6px 16px rgba(120,60,180,.07)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: plan ? 12 : 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 18 }}>🧭</span>
+          <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#241544' }}>Your plan today</span>
+          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 9, color: '#7C3AF6', background: '#EFE7FF', padding: '3px 7px', borderRadius: 8, letterSpacing: '.4px' }}>AI COACH</span>
+        </div>
+        {plan && (
+          <button onClick={() => load(true)} aria-label="Refresh plan" disabled={loading} style={{ width: 32, height: 32, borderRadius: 10, background: '#F4EFFF', border: 'none', cursor: loading ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7C3AF6" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" style={{ animation: loading ? 'pep-spin .8s linear infinite' : 'none' }}><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5" /></svg>
+          </button>
+        )}
+      </div>
+
+      {!plan && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 12 }}>
+          <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2.5px solid #ECE6FA', borderTopColor: '#7C3AF6', display: 'inline-block', animation: 'pep-spin .8s linear infinite', flex: 'none' }} />
+          <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>Building your plan...</span>
+        </div>
+      )}
+
+      {plan && (
+        <>
+          <CoachBlock label="EAT">
+            {plan.eat.map((e, i) => (
+              <div key={i} style={{ marginBottom: i < plan.eat.length - 1 ? 8 : 0 }}>
+                <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14.5, color: '#241544' }}>{e.title}</div>
+                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: '#6E6596', lineHeight: 1.35 }}>{e.detail}</div>
+              </div>
+            ))}
+          </CoachBlock>
+          <CoachBlock label="MOVE">
+            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14.5, color: '#241544' }}>{plan.move.title}</div>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: '#6E6596', lineHeight: 1.35 }}>{plan.move.detail}</div>
+          </CoachBlock>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#F4EFFF', borderRadius: 12, padding: '10px 12px', marginTop: 12 }}>
+            <span style={{ fontSize: 15, flex: 'none' }}>🎯</span>
+            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13.5, color: '#5B22C9' }}>{plan.focus}</span>
+          </div>
+          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 10.5, color: '#B6AEC9', marginTop: 10, textAlign: 'center' }}>
+            General wellness guidance, not medical advice.
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
+function CoachBlock({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginTop: 14 }}>
+      <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#6E6596', letterSpacing: '.5px', marginBottom: 6 }}>{label}</div>
+      {children}
     </div>
   )
 }
