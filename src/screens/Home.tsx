@@ -395,6 +395,11 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
         </div>
         {typeTag && <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#7A719B', background: '#F4EFFF', padding: '4px 9px', borderRadius: 10, flex: 'none' }}>{typeTag}</span>}
         <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#C3BBD6', flex: 'none' }}>{relativeTime(post.at, now)}</span>
+        {isMine && (
+          <button onClick={(e) => { e.stopPropagation(); actions.deletePost(post.id) }} aria-label="Delete post" style={{ width: 30, height: 30, borderRadius: 9, background: '#FFF1F4', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF4D6D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
+          </button>
+        )}
       </div>
 
       <div onClick={() => onOpenPost(post.id)} style={{ cursor: 'pointer' }}>
