@@ -6,6 +6,10 @@ import type { SeedMember } from '../seed'
 
 export type SocialProvider = 'google' | 'apple'
 
+/** A real (Supabase) user, for friend search / requests / friends list. */
+export type FriendProfile = { id: string; name: string; username: string | null; avatar: string }
+export type Friendships = { friends: FriendProfile[]; incoming: FriendProfile[]; outgoing: FriendProfile[] }
+
 /** Onboarding goal stashed before an OAuth redirect, applied on return. */
 export const PENDING_GOAL_KEY = 'pendingGoal'
 
@@ -25,6 +29,18 @@ export interface FettleApi {
   updateAccount(accountId: string, patch: Partial<Pick<Account, 'name' | 'avatar'>>): Promise<Account | null>
   /** community members for the leaderboard, excluding the current user */
   getLeaderboard(excludeId: string): Promise<SeedMember[]>
+
+  // ── real multi-user friends (only meaningful when realFriends is true) ──────
+  /** true when this backend supports real friend search/requests (Supabase) */
+  readonly realFriends: boolean
+  myUsername(): Promise<string | null>
+  setUsername(username: string): Promise<{ ok: boolean; error?: string }>
+  searchUsers(query: string): Promise<FriendProfile[]>
+  findByUsername(username: string): Promise<FriendProfile | null>
+  sendFriendRequest(userId: string): Promise<{ ok: boolean; error?: string }>
+  respondToRequest(requesterId: string, accept: boolean): Promise<void>
+  removeFriend(userId: string): Promise<void>
+  listFriendships(): Promise<Friendships>
 }
 
 export class ApiError extends Error {

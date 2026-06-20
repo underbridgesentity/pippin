@@ -1,5 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Avatar } from '../components/Avatar'
+import { api } from '../lib/api'
+import type { FriendProfile, Friendships } from '../lib/api/contract'
 import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
 import { num, relativeTime } from '../lib/format'
@@ -96,7 +98,9 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
         </>
       )}
 
-      {tab === 'Friends' && (
+      {tab === 'Friends' && api.realFriends && <RealFriends />}
+
+      {tab === 'Friends' && !api.realFriends && (
         <>
           <BuddySection d={d} onCheckIn={onCheckIn} onOpenMember={onOpenMember} />
           {d.friends.length > 0 ? (
@@ -148,6 +152,167 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
       )}
     </div>
   )
+}
+
+// ── real (Supabase) friends ──────────────────────────────────────────────────
+function RealFriends() {
+  const [username, setUsername] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [editing, setEditing] = useState(false)
+  const [fs, setFs] = useState<Friendships>({ friends: [], incoming: [], outgoing: [] })
+  const [query, setQuery] = useState('')
+  const [results, setResults] = useState<FriendProfile[]>([])
+  const [loading, setLoading] = useState(true)
+
+  async function refresh() {
+    const [u, f] = await Promise.all([api.myUsername(), api.listFriendships()])
+    setUsername(u)
+    setFs(f)
+    setLoading(false)
+  }
+  useEffect(() => {
+    refresh()
+  }, [])
+
+  async function search(q: string) {
+    setQuery(q)
+    if (q.trim().length < 2) return setResults([])
+    setResults(await api.searchUsers(q))
+  }
+  async function saveUsername() {
+    const res = await api.setUsername(draft)
+    if (res.ok) {
+      setEditing(false)
+      actions.toast('Username saved')
+      refresh()
+    } else actions.toast(res.error || 'Could not save')
+  }
+  async function add(p: FriendProfile) {
+    const res = await api.sendFriendRequest(p.id)
+    actions.toast(res.ok ? `Request sent to ${p.name}` : res.error || 'Could not send')
+    if (res.ok) refresh()
+  }
+  async function respond(p: FriendProfile, accept: boolean) {
+    await api.respondToRequest(p.id, accept)
+    actions.toast(accept ? `You're now friends with ${p.name} 🤝` : 'Request declined')
+    refresh()
+  }
+  function invite() {
+    if (!username) return actions.toast('Pick a username first')
+    const link = `${window.location.origin}/?add=${encodeURIComponent(username)}`
+    const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> }
+    if (nav.share) nav.share({ title: 'Add me on Fettle', text: 'Be my friend on Fettle 💪', url: link }).catch(() => {})
+    else {
+      navigator.clipboard?.writeText(link)
+      actions.toast('Invite link copied')
+    }
+  }
+
+  const friendIds = new Set(fs.friends.map((f) => f.id))
+  const outgoingIds = new Set(fs.outgoing.map((f) => f.id))
+
+  if (loading) return <div style={{ textAlign: 'center', padding: 30, fontFamily: 'Nunito', fontWeight: 700, color: '#6E6596' }}>Loading friends…</div>
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      {/* username + invite */}
+      <div style={{ background: 'linear-gradient(135deg,#7C3AF6,#9B5CFF)', borderRadius: 22, padding: 16, boxShadow: '0 8px 20px rgba(124,58,246,.22)' }}>
+        {username && !editing ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 12 }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.8)', textTransform: 'uppercase', letterSpacing: '.5px' }}>Your handle</div>
+              <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#fff' }}>@{username}</div>
+            </div>
+            <button onClick={() => { setDraft(username); setEditing(true) }} style={{ background: 'rgba(255,255,255,.2)', color: '#fff', border: 'none', borderRadius: 12, padding: '8px 12px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>Edit</button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 12 }}>
+            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.85)', textTransform: 'uppercase', letterSpacing: '.5px', marginBottom: 8 }}>{username ? 'Edit handle' : 'Pick a username so friends can find you'}</div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="username" autoFocus style={{ flex: 1, minWidth: 0, background: '#fff', border: 'none', borderRadius: 12, padding: '10px 12px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#241544', outline: 'none' }} />
+              <button onClick={saveUsername} style={{ background: '#fff', color: '#7C3AF6', border: 'none', borderRadius: 12, padding: '10px 16px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, cursor: 'pointer', flex: 'none' }}>Save</button>
+            </div>
+          </div>
+        )}
+        <button onClick={invite} className="pressable" style={{ width: '100%', background: '#fff', color: '#7C3AF6', border: 'none', borderRadius: 14, padding: 13, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.12)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.12)' }}>🔗 Share your invite link</button>
+      </div>
+
+      {/* search */}
+      <div>
+        <input value={query} onChange={(e) => search(e.target.value)} placeholder="Search by username or name…" style={{ width: '100%', background: '#fff', border: '2px solid #ECE6FA', borderRadius: 16, padding: '13px 16px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#241544', outline: 'none' }} />
+        {results.length > 0 && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12 }}>
+            {results.map((p) => (
+              <RFRow key={p.id} p={p} action={
+                friendIds.has(p.id) ? <Tag text="Friends ✓" /> : outgoingIds.has(p.id) ? <Tag text="Requested" /> : <AddBtn onClick={() => add(p)} />
+              } />
+            ))}
+          </div>
+        )}
+        {query.trim().length >= 2 && results.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '14px 0', fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#B6AEC9' }}>No one found. Share your invite link instead.</div>
+        )}
+      </div>
+
+      {/* incoming requests */}
+      {fs.incoming.length > 0 && (
+        <div>
+          <SectionLabel>Friend requests · {fs.incoming.length}</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {fs.incoming.map((p) => (
+              <RFRow key={p.id} p={p} action={
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button onClick={() => respond(p, true)} style={{ background: '#7C3AF6', color: '#fff', border: 'none', borderRadius: 12, padding: '8px 12px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Accept</button>
+                  <button onClick={() => respond(p, false)} style={{ background: '#F1ECFA', color: '#6E6596', border: 'none', borderRadius: 12, padding: '8px 10px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>✕</button>
+                </div>
+              } />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* your friends */}
+      <div>
+        <SectionLabel>Your friends · {fs.friends.length}</SectionLabel>
+        {fs.friends.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {fs.friends.map((p) => (
+              <RFRow key={p.id} p={p} action={<button onClick={() => respond(p, false)} aria-label="Remove" style={{ background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#C3BBD6' }}>Remove</button>} />
+            ))}
+          </div>
+        ) : (
+          <Empty emoji="🤝" title="No friends yet" body="Search a username above, or share your invite link to add your first friend." />
+        )}
+      </div>
+
+      {/* outgoing pending */}
+      {fs.outgoing.length > 0 && (
+        <div>
+          <SectionLabel>Sent · {fs.outgoing.length}</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {fs.outgoing.map((p) => <RFRow key={p.id} p={p} action={<Tag text="Pending" />} />)}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RFRow({ p, action }: { p: FriendProfile; action: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#fff', borderRadius: 18, padding: '12px 14px', boxShadow: '0 5px 14px rgba(120,60,180,.05)' }}>
+      <Avatar initial={(p.name[0] || 'F').toUpperCase()} gradient={p.avatar} size={42} radius={14} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{p.name}</div>
+        {p.username && <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>@{p.username}</div>}
+      </div>
+      {action}
+    </div>
+  )
+}
+
+function Tag({ text }: { text: string }) {
+  return <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#18C98A', background: '#E2F8EF', padding: '6px 11px', borderRadius: 12, flex: 'none' }}>{text}</span>
 }
 
 // ── friends ──────────────────────────────────────────────────────────────────

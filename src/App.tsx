@@ -14,6 +14,7 @@ import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
 import { CheckInSheet, CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
 import { StoreProvider, useStore, actions } from './lib/store'
+import { api } from './lib/api'
 import { findDecoratedPost } from './lib/selectors'
 import { firstName } from './lib/format'
 import type { PostType } from './lib/types'
@@ -47,6 +48,23 @@ function Root() {
   // tab change (otherwise a tab opens at the previous tab's scroll position).
   const scrollRef = useRef<HTMLDivElement>(null)
   useEffect(() => { scrollRef.current?.scrollTo(0, 0) }, [tab])
+
+  // Invite link: ?add=<username> sends that person a friend request once signed in.
+  useEffect(() => {
+    if (!account || !api.realFriends) return
+    const handle = new URLSearchParams(window.location.search).get('add')
+    if (!handle) return
+    void (async () => {
+      const target = await api.findByUsername(handle)
+      if (target && target.id !== account.id) {
+        const res = await api.sendFriendRequest(target.id)
+        actions.toast(res.ok ? `Friend request sent to ${target.name} 🤝` : res.error || 'Could not send request')
+      }
+      const url = new URL(window.location.href)
+      url.searchParams.delete('add')
+      window.history.replaceState(null, '', url.pathname + url.search)
+    })()
+  }, [account?.id])
 
   // Surface OAuth redirect errors (e.g. a provider that is not configured).
   useEffect(() => {

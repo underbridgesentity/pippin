@@ -8,7 +8,7 @@ import { computeWeeklyXp } from '../selectors'
 import { storage } from '../storage'
 import type { Account, Goal, UserState } from '../types'
 import type { SeedMember } from '../seed'
-import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type FettleApi, type SocialProvider } from './contract'
+import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type FettleApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
 
 // Only offer social buttons for providers actually enabled in Supabase, set via
 // VITE_AUTH_PROVIDERS (e.g. "google" or "google,apple"). Empty = email only.
@@ -20,7 +20,11 @@ function enabledProviders(): SocialProvider[] {
     .filter((p): p is SocialProvider => p === 'google' || p === 'apple')
 }
 
-type ProfileRow = { id: string; name: string; avatar: string; total_xp: number; weekly_xp: number; created_at?: string }
+type ProfileRow = { id: string; name: string; avatar: string; total_xp: number; weekly_xp: number; created_at?: string; username?: string | null }
+
+function toFriendProfile(p: { id: string; name: string; username?: string | null; avatar?: string | null }): FriendProfile {
+  return { id: p.id, name: p.name || 'Fettler', username: p.username ?? null, avatar: p.avatar || gradientFor(p.id) }
+}
 
 export function createSupabaseApi(url: string, anonKey: string): FettleApi {
   const sb: SupabaseClient = createClient(url, anonKey, {
@@ -49,9 +53,15 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
     }
   }
 
+  async function uid(): Promise<string | null> {
+    const { data } = await sb.auth.getSession()
+    return data.session?.user.id ?? null
+  }
+
   return {
     mode: 'supabase',
     socialProviders: enabledProviders(),
+    realFriends: true,
 
     async getSession() {
       return currentAccount()
@@ -147,6 +157,96 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
           move: `+${Math.max(0, Math.round((row.weekly_xp ?? 0) / 7))}`,
         }
       })
+    },
+
+    async myUsername() {
+      const id = await uid()
+      if (!id) return null
+      const { data } = await sb.from('profiles').select('username').eq('id', id).maybeSingle()
+      return ((data?.username as string) ?? null) || null
+    },
+
+    async setUsername(username) {
+      const clean = username.trim().toLowerCase()
+      if (!/^[a-z0-9_]{3,20}$/.test(clean)) return { ok: false, error: '3-20 letters, numbers or _' }
+      const id = await uid()
+      if (!id) return { ok: false, error: 'Not signed in' }
+      const { error } = await sb.from('profiles').update({ username: clean }).eq('id', id)
+      if (error) return { ok: false, error: error.code === '23505' ? 'That username is taken' : error.message }
+      return { ok: true }
+    },
+
+    async searchUsers(query) {
+      const id = await uid()
+      if (!id) return []
+      const q = query.trim().replace(/[^a-zA-Z0-9_ ]/g, '')
+      if (q.length < 2) return []
+      const { data } = await sb
+        .from('profiles')
+        .select('id,name,username,avatar')
+        .or(`username.ilike.%${q}%,name.ilike.%${q}%`)
+        .neq('id', id)
+        .limit(20)
+      return (data ?? []).map(toFriendProfile)
+    },
+
+    async findByUsername(username) {
+      const clean = username.trim().toLowerCase()
+      if (!/^[a-z0-9_]{3,20}$/.test(clean)) return null
+      const { data } = await sb.from('profiles').select('id,name,username,avatar').ilike('username', clean).maybeSingle()
+      return data ? toFriendProfile(data) : null
+    },
+
+    async sendFriendRequest(userId) {
+      const id = await uid()
+      if (!id) return { ok: false, error: 'Not signed in' }
+      if (id === userId) return { ok: false, error: "That's you" }
+      // If they already requested me, accept that instead of creating a new row.
+      const { data: rev } = await sb.from('friendships').select('id,status').eq('requester', userId).eq('addressee', id).maybeSingle()
+      if (rev) {
+        if (rev.status !== 'accepted') await sb.from('friendships').update({ status: 'accepted' }).eq('id', rev.id)
+        return { ok: true }
+      }
+      const { error } = await sb.from('friendships').insert({ requester: id, addressee: userId, status: 'pending' })
+      if (error) return { ok: false, error: error.code === '23505' ? 'Request already sent' : error.message }
+      return { ok: true }
+    },
+
+    async respondToRequest(requesterId, accept) {
+      const id = await uid()
+      if (!id) return
+      if (accept) await sb.from('friendships').update({ status: 'accepted' }).eq('requester', requesterId).eq('addressee', id)
+      else await sb.from('friendships').delete().eq('requester', requesterId).eq('addressee', id)
+    },
+
+    async removeFriend(userId) {
+      const id = await uid()
+      if (!id) return
+      await sb.from('friendships').delete().or(`and(requester.eq.${id},addressee.eq.${userId}),and(requester.eq.${userId},addressee.eq.${id})`)
+    },
+
+    async listFriendships(): Promise<Friendships> {
+      const empty: Friendships = { friends: [], incoming: [], outgoing: [] }
+      const id = await uid()
+      if (!id) return empty
+      const { data: rows } = await sb.from('friendships').select('requester,addressee,status').or(`requester.eq.${id},addressee.eq.${id}`)
+      const friendIds: string[] = []
+      const incomingIds: string[] = []
+      const outgoingIds: string[] = []
+      for (const r of (rows ?? []) as { requester: string; addressee: string; status: string }[]) {
+        const other = r.requester === id ? r.addressee : r.requester
+        if (r.status === 'accepted') friendIds.push(other)
+        else if (r.addressee === id) incomingIds.push(other)
+        else outgoingIds.push(other)
+      }
+      const all = [...friendIds, ...incomingIds, ...outgoingIds]
+      const byId = new Map<string, FriendProfile>()
+      if (all.length) {
+        const { data: profs } = await sb.from('profiles').select('id,name,username,avatar').in('id', all)
+        for (const p of profs ?? []) byId.set(p.id, toFriendProfile(p))
+      }
+      const pick = (ids: string[]) => ids.map((i) => byId.get(i)).filter((x): x is FriendProfile => !!x)
+      return { friends: pick(friendIds), incoming: pick(incomingIds), outgoing: pick(outgoingIds) }
     },
   }
 }

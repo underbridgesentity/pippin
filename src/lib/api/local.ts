@@ -114,4 +114,15 @@ export const localApi: FettleApi = {
   async getLeaderboard(excludeId): Promise<SeedMember[]> {
     return MEMBERS.filter((m) => m.id !== excludeId)
   },
+
+  // Real friends are a Supabase-only feature; local mode keeps the seeded demo.
+  realFriends: false,
+  async myUsername() { return null },
+  async setUsername() { return { ok: false, error: 'Sign in to set a username' } },
+  async searchUsers() { return [] },
+  async findByUsername() { return null },
+  async sendFriendRequest() { return { ok: false, error: 'Sign in to add friends' } },
+  async respondToRequest() {},
+  async removeFriend() {},
+  async listFriendships() { return { friends: [], incoming: [], outgoing: [] } },
 }
