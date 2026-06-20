@@ -405,7 +405,7 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
             <img src={post.photo} alt="" style={{ width: '100%', height: 148, objectFit: 'cover', borderRadius: 18, marginBottom: 10 }} />
           ) : (
             <div style={{ position: 'relative', height: 148, borderRadius: 18, background: post.photo, marginBottom: 10, overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', left: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(36,21,68,.78)', backdropFilter: 'blur(6px)', padding: '6px 11px', borderRadius: 14 }}>
+              <div style={{ position: 'absolute', left: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(36,21,68,.82)', padding: '6px 11px', borderRadius: 14 }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="#FFC53D"><path d="M12 2l2 5 5 .5-4 3.5 1 5-4-2.5L8 19l1-5-4-3.5 5-.5 2-5Z" /></svg>
                 <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#fff' }}>Fettle counted it</span>
               </div>

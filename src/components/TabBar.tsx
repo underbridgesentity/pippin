@@ -22,10 +22,10 @@ export function TabBar({
         left: 14,
         right: 14,
         flex: 'none',
-        background: 'rgba(255,255,255,0.68)',
-        backdropFilter: 'blur(22px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(22px) saturate(180%)',
-        border: '1px solid rgba(255,255,255,0.7)',
+        // Solid-ish translucent pill, NO backdrop-filter: a live blur here
+        // repaints every scroll frame and freezes scrolling on iOS Safari.
+        background: 'rgba(255,255,255,0.94)',
+        border: '1px solid rgba(255,255,255,0.8)',
         borderRadius: 30,
         padding: '8px 6px 10px',
         display: 'flex',

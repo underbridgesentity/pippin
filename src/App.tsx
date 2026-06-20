@@ -68,7 +68,7 @@ function Root() {
 
   return (
     <>
-      <div ref={scrollRef} className="fettle-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div ref={scrollRef} className="fettle-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {tab === 'home' && (
           <Home
             onOpenCapture={() => setCapture(true)}
