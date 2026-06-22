@@ -6,6 +6,7 @@ import { num } from '../lib/format'
 import { actions } from '../lib/store'
 import { analyzeMeal, analyzerAvailable } from '../lib/analyze'
 import type { LoggedFood, MealType } from '../lib/types'
+import { T, card, inset } from '../lib/theme'
 
 const MEAL_TYPES: { id: MealType; label: string }[] = [
   { id: 'breakfast', label: 'Breakfast' },
@@ -106,7 +107,7 @@ export function Capture({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div data-screen-label="Meal Capture" style={{ position: 'absolute', inset: 0, zIndex: 95, background: '#15102A', display: 'flex', flexDirection: 'column' }}>
+    <div data-screen-label="Meal Capture" style={{ position: 'absolute', inset: 0, zIndex: 95, background: T.bg, display: 'flex', flexDirection: 'column' }}>
       {stage === 'view' && (
         <Viewfinder
           onClose={onClose}
@@ -208,7 +209,7 @@ function Viewfinder({
         <button onClick={onClose} aria-label="Close" style={iconBtn}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
-        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 17, color: '#fff' }}>Snap your meal</span>
+        <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 17, color: '#fff' }}>Snap your meal</span>
         <div style={{ width: 40 }} />
       </div>
 
@@ -224,14 +225,14 @@ function Viewfinder({
             </div>
           )}
           {/* corner brackets */}
-          <div style={{ position: 'absolute', left: 0, top: 0, width: 36, height: 36, borderTop: '4px solid #FF6CB6', borderLeft: '4px solid #FF6CB6', borderRadius: '14px 0 0 0' }} />
-          <div style={{ position: 'absolute', right: 0, top: 0, width: 36, height: 36, borderTop: '4px solid #FF6CB6', borderRight: '4px solid #FF6CB6', borderRadius: '0 14px 0 0' }} />
-          <div style={{ position: 'absolute', left: 0, bottom: 0, width: 36, height: 36, borderBottom: '4px solid #FF6CB6', borderLeft: '4px solid #FF6CB6', borderRadius: '0 0 0 14px' }} />
-          <div style={{ position: 'absolute', right: 0, bottom: 0, width: 36, height: 36, borderBottom: '4px solid #FF6CB6', borderRight: '4px solid #FF6CB6', borderRadius: '0 0 14px 0' }} />
+          <div style={{ position: 'absolute', left: 0, top: 0, width: 36, height: 36, borderTop: `4px solid ${T.accent}`, borderLeft: `4px solid ${T.accent}`, borderRadius: '14px 0 0 0' }} />
+          <div style={{ position: 'absolute', right: 0, top: 0, width: 36, height: 36, borderTop: `4px solid ${T.accent}`, borderRight: `4px solid ${T.accent}`, borderRadius: '0 14px 0 0' }} />
+          <div style={{ position: 'absolute', left: 0, bottom: 0, width: 36, height: 36, borderBottom: `4px solid ${T.accent}`, borderLeft: `4px solid ${T.accent}`, borderRadius: '0 0 0 14px' }} />
+          <div style={{ position: 'absolute', right: 0, bottom: 0, width: 36, height: 36, borderBottom: `4px solid ${T.accent}`, borderRight: `4px solid ${T.accent}`, borderRadius: '0 0 14px 0' }} />
         </div>
       </div>
 
-      <div style={{ textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.7)', padding: '0 40px 22px' }}>
+      <div style={{ textAlign: 'center', fontFamily: T.body, fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.7)', padding: '0 40px 22px' }}>
         {live ? 'Center your plate in the frame, then tap to capture.' : status === 'loading' ? 'Starting camera...' : 'Snap a photo or log it manually, your call.'}
       </div>
 
@@ -240,7 +241,7 @@ function Viewfinder({
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 16l5-4 4 3 4-4 5 4" /></svg>
         </button>
         <button onClick={shoot} aria-label="Capture" style={{ width: 80, height: 80, borderRadius: '50%', background: '#fff', border: '5px solid rgba(255,255,255,.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'linear-gradient(135deg,#FF6CB6,#FF4D6D)' }} />
+          <div style={{ width: 62, height: 62, borderRadius: '50%', background: T.accent }} />
         </button>
         <button onClick={onManual} aria-label="Log without photo" style={squareBtn}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
@@ -256,14 +257,14 @@ function Analyzing({ photo, onManual }: { photo: string; onManual: () => void })
   return (
     <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
       <img src={photo} alt="Your meal" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(21,16,42,.4),rgba(21,16,42,.88))' }} />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg,rgba(11,13,19,.4),rgba(11,13,19,.88))' }} />
       <div style={{ position: 'relative', textAlign: 'center', padding: '0 32px 72px', color: '#fff' }}>
         <span style={{ width: 46, height: 46, borderRadius: '50%', border: '4px solid rgba(255,255,255,.3)', borderTopColor: '#fff', display: 'inline-block', animation: 'pep-spin .8s linear infinite', marginBottom: 18 }} />
-        <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 24, marginBottom: 6 }}>Reading your plate</div>
-        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.75)', maxWidth: 280, margin: '0 auto 22px', lineHeight: 1.4 }}>
+        <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 24, marginBottom: 6 }}>Reading your plate</div>
+        <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: 'rgba(255,255,255,.75)', maxWidth: 280, margin: '0 auto 22px', lineHeight: 1.4 }}>
           Spotting the foods in your photo. This takes a few seconds.
         </div>
-        <button onClick={onManual} style={{ background: 'rgba(255,255,255,.16)', color: '#fff', border: 'none', borderRadius: 14, padding: '11px 20px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
+        <button onClick={onManual} style={{ background: 'rgba(255,255,255,.16)', color: '#fff', border: 'none', borderRadius: 14, padding: '11px 20px', fontFamily: T.display, fontWeight: 600, fontSize: 14, cursor: 'pointer' }}>
           Enter manually instead
         </button>
       </div>
@@ -290,14 +291,14 @@ function LogScreen({
   const quick = QUICK_ADD_IDS.map((id) => FOOD_BY_ID[id]).filter(Boolean)
 
   return (
-    <div className="fettle-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: '#F4EFFF', position: 'relative', WebkitOverflowScrolling: 'touch' }}>
+    <div className="fettle-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: T.bg, position: 'relative', WebkitOverflowScrolling: 'touch' }}>
       {/* header with photo */}
-      <div style={{ position: 'relative', height: 168, background: photo ? '#000' : 'radial-gradient(circle at 45% 42%,#FFF,#E8E0F0)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', height: 168, background: photo ? '#000' : T.solid, overflow: 'hidden' }}>
         {photo && <img src={photo} alt="Your meal" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
-        <button onClick={onClose} aria-label="Close" style={{ ...iconBtn, position: 'absolute', left: 18, top: 54, background: 'rgba(36,21,68,.55)' }}>
+        <button onClick={onClose} aria-label="Close" style={{ ...iconBtn, position: 'absolute', left: 18, top: 54, background: 'rgba(11,13,19,.55)' }}>
           <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
-        <button onClick={onRetake} style={{ position: 'absolute', right: 16, top: 56, background: 'rgba(36,21,68,.62)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 14, padding: '8px 14px', color: '#fff', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <button onClick={onRetake} style={{ position: 'absolute', right: 16, top: 56, background: 'rgba(11,13,19,.62)', border: `1px solid ${T.line}`, borderRadius: 14, padding: '8px 14px', color: '#fff', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 8h2.5l1.3-2h6.4l1.3 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" /><circle cx="12" cy="13" r="3.2" /></svg>
           {photo ? 'Retake' : 'Add photo'}
         </button>
@@ -305,28 +306,28 @@ function LogScreen({
 
       <div style={{ padding: '16px 18px 24px' }}>
         {detected != null && detected > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#E2F8EF', borderRadius: 16, padding: '12px 14px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...inset, padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>✨</span>
-            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#0E8C5E', lineHeight: 1.3 }}>
+            <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.green, lineHeight: 1.3 }}>
               Found {detected} item{detected === 1 ? '' : 's'} from your photo. Check it over, then add or edit below.
             </span>
           </div>
         )}
         {detected === 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#FFF0DC', borderRadius: 16, padding: '12px 14px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...inset, padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>🔍</span>
-            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 14, color: '#9A5B12', lineHeight: 1.3 }}>
+            <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.amber, lineHeight: 1.3 }}>
               Couldn't auto-detect this one. Search and add the foods below.
             </span>
           </div>
         )}
         {/* meal type */}
-        <div style={{ display: 'flex', gap: 6, background: '#EDE6FA', borderRadius: 16, padding: 4, marginBottom: 16 }}>
+        <div style={{ display: 'flex', gap: 6, ...inset, padding: 4, marginBottom: 16 }}>
           {MEAL_TYPES.map((m) => (
             <button
               key={m.id}
               onClick={() => setType(m.id)}
-              style={{ flex: 1, textAlign: 'center', background: type === m.id ? '#fff' : 'transparent', borderRadius: 12, padding: '9px 4px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: type === m.id ? '#7C3AF6' : '#6E6596', border: 'none', cursor: 'pointer', boxShadow: type === m.id ? '0 2px 6px rgba(120,60,180,.12)' : 'none' }}
+              style={{ flex: 1, textAlign: 'center', background: type === m.id ? T.accent : 'transparent', borderRadius: 12, padding: '9px 4px', fontFamily: T.display, fontWeight: 600, fontSize: 13, color: type === m.id ? T.ink : T.dim, border: 'none', cursor: 'pointer' }}
             >
               {m.label}
             </button>
@@ -335,17 +336,17 @@ function LogScreen({
 
         {/* selected items */}
         {items.length > 0 && (
-          <div style={{ background: '#fff', borderRadius: 22, padding: 14, marginBottom: 14, boxShadow: '0 6px 16px rgba(120,60,180,.06)' }}>
+          <div style={{ ...card, padding: 14, marginBottom: 14 }}>
             {items.map((it) => (
               <div key={it.foodId} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0' }}>
-                <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F4EFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{it.emoji}</div>
+                <div style={{ width: 40, height: 40, borderRadius: 12, ...inset, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{it.emoji}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.name}</div>
-                  <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{it.kcal} kcal · {FOOD_BY_ID[it.foodId]?.serving ?? 'AI estimate'}</div>
+                  <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.name}</div>
+                  <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim }}>{it.kcal} kcal · {FOOD_BY_ID[it.foodId]?.serving ?? 'AI estimate'}</div>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <Stepper onClick={() => setServings(it.foodId, it.servings - 1)} label="−" />
-                  <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', minWidth: 20, textAlign: 'center' }}>{it.servings}</span>
+                  <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text, minWidth: 20, textAlign: 'center' }}>{it.servings}</span>
                   <Stepper onClick={() => setServings(it.foodId, it.servings + 1)} label="+" />
                 </div>
               </div>
@@ -355,45 +356,45 @@ function LogScreen({
 
         {/* search */}
         <div style={{ position: 'relative', marginBottom: 12 }}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B6AEC9" strokeWidth="2.4" strokeLinecap="round" style={{ position: 'absolute', left: 16, top: 15 }}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.faint} strokeWidth="2.4" strokeLinecap="round" style={{ position: 'absolute', left: 16, top: 15 }}><circle cx="11" cy="11" r="7" /><path d="M21 21l-4-4" /></svg>
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search foods…"
             autoFocus
-            style={{ width: '100%', background: '#fff', border: '2.5px solid #ECE6FA', borderRadius: 16, padding: '13px 16px 13px 44px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#241544', outline: 'none' }}
+            style={{ width: '100%', background: T.glass, border: `1px solid ${T.line}`, borderRadius: 16, padding: '13px 16px 13px 44px', fontFamily: T.body, fontWeight: 700, fontSize: 15, color: T.text, outline: 'none' }}
           />
         </div>
 
         {!query && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 14 }}>
             {quick.map((f) => (
-              <button key={f.id} onClick={() => addFood(f)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: '#fff', border: '2px solid #ECE6FA', borderRadius: 14, padding: '8px 12px', cursor: 'pointer', fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#241544' }}>
+              <button key={f.id} onClick={() => addFood(f)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: T.glass, border: `1px solid ${T.line}`, borderRadius: 14, padding: '8px 12px', cursor: 'pointer', fontFamily: T.body, fontWeight: 800, fontSize: 13, color: T.text }}>
                 <span style={{ fontSize: 16 }}>{f.emoji}</span> {f.name}
               </button>
             ))}
           </div>
         )}
 
-        <div style={{ background: '#fff', borderRadius: 22, overflow: 'hidden', boxShadow: '0 6px 16px rgba(120,60,180,.06)' }}>
+        <div style={{ ...card, overflow: 'hidden' }}>
           {results.map((f, i) => (
             <button
               key={f.id}
               onClick={() => addFood(f)}
-              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', borderTop: i ? '1px solid #F2ECFB' : 'none', padding: '12px 14px', cursor: 'pointer', textAlign: 'left' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', background: 'none', border: 'none', borderTop: i ? `1px solid ${T.lineSoft}` : 'none', padding: '12px 14px', cursor: 'pointer', textAlign: 'left' }}
             >
-              <div style={{ width: 40, height: 40, borderRadius: 12, background: '#F4EFFF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{f.emoji}</div>
+              <div style={{ width: 40, height: 40, borderRadius: 12, ...inset, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>{f.emoji}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>{f.name}</div>
-                <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12, color: '#6E6596' }}>{f.kcal} kcal · {f.serving} · {f.category}</div>
+                <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text }}>{f.name}</div>
+                <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim }}>{f.kcal} kcal · {f.serving} · {f.category}</div>
               </div>
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#EFE7FF', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#7C3AF6" strokeWidth="2.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: T.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.6" strokeLinecap="round"><path d="M12 5v14M5 12h14" /></svg>
               </div>
             </button>
           ))}
           {results.length === 0 && (
-            <div style={{ padding: 20, textAlign: 'center', fontFamily: 'Nunito', fontWeight: 700, fontSize: 14, color: '#6E6596' }}>No foods match "{query}".</div>
+            <div style={{ padding: 20, textAlign: 'center', fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim }}>No foods match "{query}".</div>
           )}
         </div>
       </div>
@@ -405,18 +406,18 @@ function LogScreen({
 // at the bottom of the device frame instead of moving with the scroll.
 function SaveFooter({ items, totals, onSave }: { items: LoggedFood[]; totals: { kcal: number; protein: number; carbs: number; fat: number }; onSave: () => void }) {
   return (
-    <div style={{ flex: 'none', padding: '12px 18px calc(18px + env(safe-area-inset-bottom, 8px))', background: '#F4EFFF', borderTop: '1px solid #E7DEF7', boxShadow: '0 -6px 20px rgba(120,60,180,.07)' }}>
+    <div style={{ flex: 'none', padding: '12px 18px calc(18px + env(safe-area-inset-bottom, 8px))', background: T.solid, borderTop: `1px solid ${T.line}` }}>
       {items.length > 0 && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, padding: '0 4px' }}>
-          <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{num(totals.kcal)} <span style={{ fontSize: 14, color: '#6E6596' }}>kcal</span></span>
-          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}>P {totals.protein}g · C {totals.carbs}g · F {totals.fat}g</span>
+          <span style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.text }}>{num(totals.kcal)} <span style={{ fontSize: 14, color: T.dim }}>kcal</span></span>
+          <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 12, color: T.dim }}>P {totals.protein}g · C {totals.carbs}g · F {totals.fat}g</span>
         </div>
       )}
       <button
         onClick={onSave}
         disabled={!items.length}
         className="pressable"
-        style={{ background: items.length ? '#18C98A' : '#C9BFE0', color: '#fff', border: 'none', borderRadius: 20, padding: 17, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, boxShadow: items.length ? '0 5px 0 #0E9E6C' : 'none', cursor: items.length ? 'pointer' : 'default', width: '100%', ['--press-y' as string]: '3px', ['--press-shadow' as string]: '0 2px 0 #0E9E6C' }}
+        style={{ background: items.length ? T.accent : T.glassHi, color: items.length ? T.ink : T.faint, border: 'none', borderRadius: 20, padding: 17, fontFamily: T.display, fontWeight: 600, fontSize: 19, cursor: items.length ? 'pointer' : 'default', width: '100%', ['--press-y' as string]: '3px' }}
       >
         {items.length ? 'Log meal · +45 XP' : 'Add a food to log'}
       </button>
@@ -426,7 +427,7 @@ function SaveFooter({ items, totals, onSave }: { items: LoggedFood[]; totals: { 
 
 function Stepper({ onClick, label }: { onClick: () => void; label: string }) {
   return (
-    <button onClick={onClick} style={{ width: 30, height: 30, borderRadius: 10, background: '#F1ECFA', border: 'none', cursor: 'pointer', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 18, color: '#7C3AF6', display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+    <button onClick={onClick} style={{ width: 30, height: 30, borderRadius: 10, background: T.glassHi, border: `1px solid ${T.line}`, cursor: 'pointer', fontFamily: T.display, fontWeight: 600, fontSize: 18, color: T.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
       {label}
     </button>
   )

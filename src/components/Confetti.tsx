@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
+import { T } from '../lib/theme'
 
-const COLORS = ['#7C3AF6', '#FF4D6D', '#FF8A1E', '#FFC53D', '#18C98A', '#2BB7F2', '#FF6CB6']
+const COLORS = [T.accent, T.rose, T.amber, T.green, T.blue, T.violet]
 
 /**
  * Falling confetti burst, ported from the design's makeConfetti().

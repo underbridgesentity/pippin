@@ -77,14 +77,14 @@ export function computeStreak(state: UserState, now = Date.now()): number {
 export type Badge = { id: string; name: string; color: string; hint: string }
 
 export const BADGES: Badge[] = [
-  { id: 'first-steps', name: 'First Steps', color: '#18C98A', hint: 'Finish onboarding' },
-  { id: 'early-bird', name: 'Early Bird', color: '#FF8A1E', hint: 'Log a meal before 9am' },
-  { id: 'streak-7', name: '7-Day Streak', color: '#FF4D6D', hint: 'Keep a 7-day streak' },
-  { id: 'first-move', name: 'On the Move', color: '#2BB7F2', hint: 'Log your first activity' },
+  { id: 'first-steps', name: 'First Steps', color: '#5BE39A', hint: 'Finish onboarding' },
+  { id: 'early-bird', name: 'Early Bird', color: '#FFB86B', hint: 'Log a meal before 9am' },
+  { id: 'streak-7', name: '7-Day Streak', color: '#FF7A93', hint: 'Keep a 7-day streak' },
+  { id: 'first-move', name: 'On the Move', color: '#6FA8FF', hint: 'Log your first activity' },
   { id: 'meal-master', name: 'Meal Master', color: '#FFC53D', hint: 'Log 10 meals' },
-  { id: 'squad-captain', name: 'Squad Captain', color: '#7C3AF6', hint: 'Join a challenge' },
-  { id: 'iron-will', name: 'Iron Will', color: '#FF6CB6', hint: 'Reach a 14-day streak' },
-  { id: 'century', name: '100 Meals', color: '#18C98A', hint: 'Log 100 meals' },
+  { id: 'squad-captain', name: 'Squad Captain', color: '#9F8BFF', hint: 'Join a challenge' },
+  { id: 'iron-will', name: 'Iron Will', color: '#FF9FD0', hint: 'Reach a 14-day streak' },
+  { id: 'century', name: '100 Meals', color: '#5BE39A', hint: 'Log 100 meals' },
 ]
 
 /** Returns the ids of every badge currently earned by the data. */

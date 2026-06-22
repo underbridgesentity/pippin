@@ -1,3 +1,5 @@
+import { T } from '../lib/theme'
+
 export function Toast({ message }: { message: string }) {
   return (
     <div
@@ -10,10 +12,11 @@ export function Toast({ message }: { message: string }) {
         display: 'flex',
         alignItems: 'center',
         gap: 10,
-        background: '#241544',
+        background: T.solid,
+        border: `1px solid ${T.line}`,
         padding: '13px 18px',
         borderRadius: 18,
-        boxShadow: '0 12px 30px rgba(36,21,68,.35)',
+        boxShadow: '0 12px 30px rgba(0,0,0,.5)',
         animation: 'pep-toast 2.6s ease forwards',
         whiteSpace: 'nowrap',
       }}
@@ -34,7 +37,7 @@ export function Toast({ message }: { message: string }) {
           <path d="M5 13l4 4L19 7" stroke="#fff" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </div>
-      <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#fff' }}>{message}</span>
+      <span style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 15, color: T.text }}>{message}</span>
     </div>
   )
 }

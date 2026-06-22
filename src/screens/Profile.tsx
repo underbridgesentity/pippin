@@ -4,6 +4,7 @@ import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
 import { num } from '../lib/format'
+import { T, card, inset, eyebrow } from '../lib/theme'
 import type { WeightEntry } from '../lib/types'
 
 export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings: () => void; onShareWin: () => void; onSnap: () => void }) {
@@ -12,10 +13,10 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
   if (!account || !d || !data) return null
 
   const stats = [
-    { value: num(d.streak), label: 'Day streak', color: '#FF8A1E' },
-    { value: num(d.winsCount), label: 'Wins', color: '#18C98A' },
-    { value: num(d.unlockedCount), label: 'Badges', color: '#FF4D6D' },
-    { value: num(d.mealCount), label: 'Meals', color: '#2BB7F2' },
+    { value: num(d.streak), label: 'Day streak', color: T.amber },
+    { value: num(d.winsCount), label: 'Wins', color: T.green },
+    { value: num(d.unlockedCount), label: 'Badges', color: T.rose },
+    { value: num(d.mealCount), label: 'Meals', color: T.blue },
   ]
 
   const completed = d.joinedChallenges.find((j) => j.complete)
@@ -37,26 +38,26 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
   return (
     <div data-screen-label="Profile" style={{ padding: '56px 18px 116px' }}>
       {/* character + identity */}
-      <div style={{ background: 'linear-gradient(160deg,#7C3AF6,#9B5CFF)', borderRadius: 28, padding: '22px 18px 20px', marginBottom: 14, boxShadow: '0 10px 26px rgba(124,58,246,.28)', position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,.1)' }} />
+      <div style={{ ...card, borderRadius: 28, padding: '22px 18px 20px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', background: T.accentDim }} />
         <div style={{ display: 'flex', justifyContent: 'flex-end', position: 'relative' }}>
-          <button onClick={onOpenSettings} aria-label="Settings" style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,.18)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 13a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1Z" /></svg>
+          <button onClick={onOpenSettings} aria-label="Settings" style={{ width: 38, height: 38, borderRadius: 12, background: T.glassHi, border: `1px solid ${T.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={T.text} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="3" /><path d="M19.4 13a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1v.3a2 2 0 1 1-4 0v-.2a1.6 1.6 0 0 0-2.7-1.1l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.6 1.6 0 0 0-1.1-2.7H3a2 2 0 1 1 0-4h.2a1.6 1.6 0 0 0 1.1-2.7l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.6 1.6 0 0 0 1.8.3 1.6 1.6 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-.3 1.8 1.6 1.6 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.6 1.6 0 0 0-1.4 1Z" /></svg>
           </button>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -10 }}>
           <div style={{ position: 'relative', width: 128, height: 128, marginBottom: 10 }}>
             <svg width="128" height="128" viewBox="0 0 128 128" style={{ position: 'absolute', inset: 0 }}>
-              <circle cx="64" cy="64" r="58" fill="none" stroke="rgba(255,255,255,.2)" strokeWidth="7" />
-              <circle cx="64" cy="64" r="58" fill="none" stroke="#FFC53D" strokeWidth="7" strokeLinecap="round" strokeDasharray={2 * Math.PI * 58} strokeDashoffset={2 * Math.PI * 58 * (1 - d.xpPct)} transform="rotate(-90 64 64)" style={{ transition: 'stroke-dashoffset .5s ease' }} />
+              <circle cx="64" cy="64" r="58" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
+              <circle cx="64" cy="64" r="58" fill="none" stroke={T.accent} strokeWidth="7" strokeLinecap="round" strokeDasharray={2 * Math.PI * 58} strokeDashoffset={2 * Math.PI * 58 * (1 - d.xpPct)} transform="rotate(-90 64 64)" style={{ transition: 'stroke-dashoffset .5s ease' }} />
             </svg>
             <div style={{ position: 'absolute', inset: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Mascot stage={d.stageName} size={92} float />
             </div>
-            <div style={{ position: 'absolute', bottom: -2, left: '50%', transform: 'translateX(-50%)', background: '#FFC53D', borderRadius: 13, padding: '3px 12px', fontFamily: 'Fredoka', fontWeight: 700, fontSize: 13, color: '#241544', boxShadow: '0 4px 10px rgba(255,138,30,.4)', border: '2px solid #fff' }}>LVL {d.level}</div>
+            <div style={{ position: 'absolute', bottom: -2, left: '50%', transform: 'translateX(-50%)', background: T.accent, borderRadius: 13, padding: '3px 12px', fontFamily: T.display, fontWeight: 700, fontSize: 13, color: T.ink, border: `2px solid ${T.bg}` }}>LVL {d.level}</div>
           </div>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 23, color: '#fff' }}>{account.name}</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: 'rgba(255,255,255,.8)' }}>
+          <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 23, color: T.text }}>{account.name}</div>
+          <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 13, color: T.dim }}>
             {d.stageName}{d.nextStage ? ` · ${num(d.xpToNextStage)} XP to ${d.nextStage}` : ' · max stage'}
           </div>
         </div>
@@ -65,9 +66,9 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
       {/* stats row */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
         {stats.map((s) => (
-          <div key={s.label} style={{ flex: 1, background: '#fff', borderRadius: 18, padding: '13px 6px', textAlign: 'center', boxShadow: '0 5px 14px rgba(120,60,180,.06)' }}>
-            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 22, color: s.color }}>{s.value}</div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: '#6E6596' }}>{s.label}</div>
+          <div key={s.label} style={{ ...inset, flex: 1, borderRadius: 18, padding: '13px 6px', textAlign: 'center' }}>
+            <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 22, color: s.color }}>{s.value}</div>
+            <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.dim }}>{s.label}</div>
           </div>
         ))}
       </div>
@@ -77,38 +78,38 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
 
       {/* community impact, celebrating generosity, not just personal metrics */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <div style={{ flex: 1, background: 'linear-gradient(135deg,#FF8A1E,#FFC53D)', borderRadius: 18, padding: '14px 16px', boxShadow: '0 5px 14px rgba(255,138,30,.2)' }}>
+        <div style={{ ...inset, flex: 1, borderRadius: 18, padding: '14px 16px' }}>
           <div style={{ fontSize: 20, marginBottom: 2 }}>👏</div>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#fff' }}>{num(d.kudosGiven)}</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.92)' }}>Cheers given</div>
+          <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.amber }}>{num(d.kudosGiven)}</div>
+          <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.dim }}>Cheers given</div>
         </div>
-        <div style={{ flex: 1, background: 'linear-gradient(135deg,#FF6CB6,#FF4D6D)', borderRadius: 18, padding: '14px 16px', boxShadow: '0 5px 14px rgba(255,77,109,.2)' }}>
+        <div style={{ ...inset, flex: 1, borderRadius: 18, padding: '14px 16px' }}>
           <div style={{ fontSize: 20, marginBottom: 2 }}>💛</div>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#fff' }}>{num(d.kudosReceived)}</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.92)' }}>Cheers received</div>
+          <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.rose }}>{num(d.kudosReceived)}</div>
+          <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.dim }}>Cheers received</div>
         </div>
       </div>
 
       {/* proud moment */}
-      <div style={{ position: 'relative', background: 'linear-gradient(135deg,#FF8A1E,#FF4D6D)', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden', boxShadow: '0 10px 24px rgba(255,77,109,.28)' }}>
+      <div style={{ ...card, position: 'relative', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden' }}>
         <Confetti count={24} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(255,255,255,.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', border: '2.5px solid rgba(255,255,255,.5)' }}>
-            <svg width="34" height="34" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', background: T.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', border: `2.5px solid ${T.line}` }}>
+            <svg width="34" height="34" viewBox="0 0 24 24" fill={T.accent}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 11, color: 'rgba(255,255,255,.85)', textTransform: 'uppercase', letterSpacing: '.5px' }}>{proud.tag}</div>
-            <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#fff', lineHeight: 1.15 }}>{proud.text}</div>
+            <div style={{ ...eyebrow, letterSpacing: '.5px' }}>{proud.tag}</div>
+            <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text, lineHeight: 1.15 }}>{proud.text}</div>
           </div>
         </div>
-        <button onClick={cta.action} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: '#fff', color: '#FF4D6D', border: 'none', borderRadius: 15, padding: 12, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, cursor: 'pointer', boxShadow: '0 4px 0 rgba(0,0,0,.1)', ['--press-shadow' as string]: '0 2px 0 rgba(0,0,0,.1)' }}>
+        <button onClick={cta.action} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: 15, padding: 12, fontFamily: T.display, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
           {cta.label}
         </button>
       </div>
 
       {/* evolution */}
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544', marginBottom: 12, paddingLeft: 2 }}>Your character grows with you</div>
-      <div style={{ background: '#fff', borderRadius: 24, padding: 16, marginBottom: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text, marginBottom: 12, paddingLeft: 2 }}>Your character grows with you</div>
+      <div style={{ ...card, borderRadius: 24, padding: 16, marginBottom: 18, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         {STAGES.map((s, i) => (
           <Stage key={s.key} name={s.name} state={i < currentStageIdx ? 'done' : i === currentStageIdx ? 'current' : 'locked'} isLast={i === STAGES.length - 1} />
         ))}
@@ -116,20 +117,20 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
 
       {/* badges */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 2px' }}>
-        <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Badge collection</span>
-        <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#6E6596' }}>{d.unlockedCount} of {d.badgeTotal}</span>
+        <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text }}>Badge collection</span>
+        <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 13, color: T.dim }}>{d.unlockedCount} of {d.badgeTotal}</span>
       </div>
-      <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
+      <div style={{ ...card, borderRadius: 24, padding: 18, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
         {d.badges.map((b) => (
           <button key={b.id} onClick={() => actions.toast(b.unlocked ? `${b.name} unlocked ✓` : `${b.name}: ${b.hint}`)} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : '#ECE6FA', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(120,60,180,.12)' }}>
+            <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : T.glass, border: b.unlocked ? 'none' : `1px solid ${T.lineSoft}`, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               {b.unlocked ? (
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="#fff"><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
+                <svg width="28" height="28" viewBox="0 0 24 24" fill={T.ink}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
               ) : (
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9BFE0" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.faint} strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
               )}
             </div>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#7A719B', lineHeight: 1.2 }}>{b.name}</div>
+            <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 10, color: T.dim, lineHeight: 1.2 }}>{b.name}</div>
           </button>
         ))}
       </div>
@@ -138,16 +139,16 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
       {d.circleBadges.some((b) => b.inCircle || b.unlocked) && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '18px 2px 12px' }}>
-            <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 19, color: '#241544' }}>Circle rewards</span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#6E6596' }}>{d.circleBadges.filter((b) => b.unlocked).length} earned</span>
+            <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text }}>Circle rewards</span>
+            <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 13, color: T.dim }}>{d.circleBadges.filter((b) => b.unlocked).length} earned</span>
           </div>
-          <div style={{ background: '#fff', borderRadius: 24, padding: 18, boxShadow: '0 6px 16px rgba(120,60,180,.06)', display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
+          <div style={{ ...card, borderRadius: 24, padding: 18, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: '16px 6px' }}>
             {d.circleBadges.filter((b) => b.inCircle || b.unlocked).map((b) => (
               <button key={b.id} onClick={() => actions.toast(b.unlocked ? `${b.name} unlocked ✓` : `${b.name}: contribute to your circle to earn it`)} style={{ textAlign: 'center', opacity: b.unlocked ? 1 : 0.5, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : '#ECE6FA', margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, boxShadow: '0 4px 10px rgba(120,60,180,.12)' }}>
-                  {b.unlocked ? b.emoji : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9BFE0" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>}
+                <div style={{ width: 54, height: 54, borderRadius: '50%', background: b.unlocked ? b.color : T.glass, border: b.unlocked ? 'none' : `1px solid ${T.lineSoft}`, margin: '0 auto 6px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26 }}>
+                  {b.unlocked ? b.emoji : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={T.faint} strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>}
                 </div>
-                <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10, color: '#7A719B', lineHeight: 1.2 }}>{b.name}</div>
+                <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 10, color: T.dim, lineHeight: 1.2 }}>{b.name}</div>
               </button>
             ))}
           </div>
@@ -162,19 +163,19 @@ function Stage({ name, state, isLast }: { name: string; state: 'done' | 'current
     <>
       <div style={{ textAlign: 'center', opacity: state === 'locked' ? 0.4 : state === 'done' ? 0.55 : 1 }}>
         {state === 'current' ? (
-          <div style={{ width: 58, height: 58, borderRadius: '50%', background: 'linear-gradient(135deg,#9B5CFF,#7C3AF6)', margin: '0 auto 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid #FFC53D' }}>
+          <div style={{ width: 58, height: 58, borderRadius: '50%', background: T.accent, margin: '0 auto 5px', display: 'flex', alignItems: 'center', justifyContent: 'center', border: `3px solid ${T.accent}` }}>
             <Mascot stage={name} size={34} />
           </div>
         ) : state === 'done' ? (
-          <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#18C98A', margin: '0 auto 5px' }} />
+          <div style={{ width: 46, height: 46, borderRadius: '50%', background: T.green, margin: '0 auto 5px' }} />
         ) : (
-          <div style={{ width: 46, height: 46, borderRadius: '50%', background: '#E3DAF5', margin: '0 auto 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E6596" strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+          <div style={{ width: 46, height: 46, borderRadius: '50%', background: T.glass, border: `1px solid ${T.lineSoft}`, margin: '0 auto 5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.faint} strokeWidth="2.4"><rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
           </div>
         )}
-        <div style={{ fontFamily: state === 'current' ? 'Fredoka' : 'Nunito', fontWeight: state === 'current' ? 600 : 800, fontSize: state === 'current' ? 11 : 10, color: state === 'current' ? '#7C3AF6' : '#6E6596' }}>{name}</div>
+        <div style={{ fontFamily: state === 'current' ? T.display : T.body, fontWeight: state === 'current' ? 600 : 800, fontSize: state === 'current' ? 11 : 10, color: state === 'current' ? T.accent : T.dim }}>{name}</div>
       </div>
-      {!isLast && <div style={{ width: 18, height: 2, background: '#E3DAF5', flex: 'none', marginBottom: 18 }} />}
+      {!isLast && <div style={{ width: 18, height: 2, background: T.line, flex: 'none', marginBottom: 18 }} />}
     </>
   )
 }
@@ -182,13 +183,13 @@ function Stage({ name, state, isLast }: { name: string; state: 'done' | 'current
 function WeightCard({ weights, onSetup }: { weights: WeightEntry[]; onSetup: () => void }) {
   if (weights.length === 0) {
     return (
-      <button onClick={onSetup} className="pressable" style={{ width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12, background: '#fff', border: 'none', borderRadius: 20, padding: 16, marginBottom: 16, cursor: 'pointer', boxShadow: '0 5px 14px rgba(120,60,180,.06)' }}>
-        <div style={{ width: 44, height: 44, borderRadius: 14, background: '#EFE7FF', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>⚖️</div>
+      <button onClick={onSetup} className="pressable" style={{ ...card, width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 12, borderRadius: 20, padding: 16, marginBottom: 16, cursor: 'pointer' }}>
+        <div style={{ ...inset, width: 44, height: 44, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, flex: 'none' }}>⚖️</div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Track your weight</div>
-          <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: '#6E6596', lineHeight: 1.3 }}>Add your height & weight for a personalized calorie target and a progress trend.</div>
+          <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text }}>Track your weight</div>
+          <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12.5, color: T.dim, lineHeight: 1.3 }}>Add your height & weight for a personalized calorie target and a progress trend.</div>
         </div>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7C3AF6" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}><path d="M9 6l6 6-6 6" /></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" style={{ flex: 'none' }}><path d="M9 6l6 6-6 6" /></svg>
       </button>
     )
   }
@@ -207,18 +208,18 @@ function WeightCard({ weights, onSetup }: { weights: WeightEntry[]; onSetup: () 
   })
   const path = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ')
   const dropped = change < 0
-  const trendColor = dropped ? '#18C98A' : change > 0 ? '#FF8A1E' : '#9B91B8'
+  const trendColor = dropped ? T.green : change > 0 ? T.amber : T.dim
 
   return (
-    <button onClick={onSetup} className="pressable" style={{ width: '100%', textAlign: 'left', display: 'block', background: '#fff', border: 'none', borderRadius: 20, padding: 16, marginBottom: 16, cursor: 'pointer', boxShadow: '0 5px 14px rgba(120,60,180,.06)' }}>
+    <button onClick={onSetup} className="pressable" style={{ ...card, width: '100%', textAlign: 'left', display: 'block', borderRadius: 20, padding: 16, marginBottom: 16, cursor: 'pointer' }}>
       <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 10 }}>
         <div>
-          <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544' }}>Weight </span>
-          <span style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 22, color: '#241544' }}>{current}</span>
-          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596' }}> kg</span>
+          <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text }}>Weight </span>
+          <span style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.text }}>{current}</span>
+          <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 12, color: T.dim }}> kg</span>
         </div>
         {weights.length > 1 && (
-          <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: trendColor, background: dropped ? '#E2F8EF' : change > 0 ? '#FFF0DC' : '#F1ECFA', padding: '4px 10px', borderRadius: 12 }}>
+          <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 12, color: trendColor, background: T.glass, border: `1px solid ${T.lineSoft}`, padding: '4px 10px', borderRadius: 12 }}>
             {change > 0 ? '+' : ''}{change} kg
           </span>
         )}
@@ -229,7 +230,7 @@ function WeightCard({ weights, onSetup }: { weights: WeightEntry[]; onSetup: () 
           <circle cx={pts[pts.length - 1].x} cy={pts[pts.length - 1].y} r="3.5" fill={trendColor} />
         </svg>
       ) : (
-        <div style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 12.5, color: '#6E6596' }}>Update your weight in Settings to see your progress trend.</div>
+        <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12.5, color: T.dim }}>Update your weight in Settings to see your progress trend.</div>
       )}
     </button>
   )

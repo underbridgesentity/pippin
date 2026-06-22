@@ -11,7 +11,7 @@ function clockLabel(): string {
 // phones (see the .ios-statusbar media query), where the device draws the real
 // clock, wifi, and battery. The time is live so the preview never looks frozen.
 function StatusBar() {
-  const c = '#241544'
+  const c = '#EAECF3'
   const [time, setTime] = useState(clockLabel)
   useEffect(() => {
     const id = setInterval(() => setTime(clockLabel()), 15_000)
@@ -88,8 +88,8 @@ export function IOSDevice({ children }: { children: ReactNode }) {
           border-radius: 48px;
           overflow: hidden;
           position: relative;
-          background: ${'#F4EFFF'};
-          box-shadow: 0 40px 80px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.12);
+          background: radial-gradient(circle at 50% -8%, #161b27, #0b0d13 58%);
+          box-shadow: 0 40px 90px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.06);
           font-family: -apple-system, system-ui, sans-serif;
         }
         .ios-island {
@@ -126,7 +126,7 @@ export function IOSDevice({ children }: { children: ReactNode }) {
           width: 139px;
           height: 5px;
           border-radius: 100px;
-          background: rgba(36,21,68,0.22);
+          background: rgba(255,255,255,0.28);
         }
 
         @media (max-width: 640px) {

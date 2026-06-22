@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { T } from '../lib/theme'
 
 /** Bottom-sheet modal scoped to the device frame. */
 export function Sheet({
@@ -22,7 +23,7 @@ export function Sheet({
         position: 'absolute',
         inset: 0,
         zIndex: 85,
-        background: 'rgba(36,21,68,.45)',
+        background: 'rgba(7,8,12,.62)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
@@ -33,26 +34,27 @@ export function Sheet({
         onClick={(e) => e.stopPropagation()}
         className="fettle-scroll"
         style={{
-          background: '#F4EFFF',
+          background: T.solid,
           borderRadius: '28px 28px 0 0',
           maxHeight,
           overflowY: 'auto',
           animation: 'pep-sheet .28s cubic-bezier(.2,.9,.3,1)',
           paddingBottom: 'env(safe-area-inset-bottom, 24px)',
-          boxShadow: '0 -12px 40px rgba(36,21,68,.25)',
+          boxShadow: '0 -12px 40px rgba(0,0,0,.5)',
+          borderTop: `1px solid ${T.line}`,
         }}
       >
-        <div style={{ position: 'sticky', top: 0, background: '#F4EFFF', zIndex: 2, padding: '12px 0 4px' }}>
-          <div style={{ width: 40, height: 5, borderRadius: 5, background: '#D9CEF0', margin: '0 auto' }} />
+        <div style={{ position: 'sticky', top: 0, background: T.solid, zIndex: 2, padding: '12px 0 4px' }}>
+          <div style={{ width: 40, height: 5, borderRadius: 5, background: T.line, margin: '0 auto' }} />
           {title && (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 20px 8px' }}>
-              <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 22, color: '#241544' }}>{title}</span>
+              <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 22, color: T.text }}>{title}</span>
               <button
                 onClick={onClose}
                 aria-label="Close"
-                style={{ width: 34, height: 34, borderRadius: '50%', background: '#EAE2F8', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 34, height: 34, borderRadius: '50%', background: T.glassHi, border: `1px solid ${T.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#7A719B" strokeWidth="2.6" strokeLinecap="round">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.dim} strokeWidth="2.6" strokeLinecap="round">
                   <path d="M6 6l12 12M18 6L6 18" />
                 </svg>
               </button>

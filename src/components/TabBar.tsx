@@ -1,7 +1,9 @@
+import { T } from '../lib/theme'
+
 export type Tab = 'home' | 'challenges' | 'squad' | 'profile'
 
-const GRAPE = '#7C3AF6'
-const MUTED = '#B6AEC9'
+const ACTIVE = T.accent
+const MUTED = T.faint
 
 export function TabBar({
   tab,
@@ -12,7 +14,7 @@ export function TabBar({
   onTab: (t: Tab) => void
   onCapture: () => void
 }) {
-  const color = (t: Tab) => (tab === t ? GRAPE : MUTED)
+  const color = (t: Tab) => (tab === t ? ACTIVE : MUTED)
 
   return (
     <div
@@ -22,16 +24,16 @@ export function TabBar({
         left: 14,
         right: 14,
         flex: 'none',
-        // Solid-ish translucent pill, NO backdrop-filter: a live blur here
-        // repaints every scroll frame and freezes scrolling on iOS Safari.
-        background: 'rgba(255,255,255,0.94)',
-        border: '1px solid rgba(255,255,255,0.8)',
+        // Dark glass pill, NO backdrop-filter: a live blur here repaints every
+        // scroll frame and freezes scrolling on iOS Safari.
+        background: 'rgba(22,26,37,0.86)',
+        border: '1px solid rgba(255,255,255,0.1)',
         borderRadius: 30,
         padding: '8px 6px 10px',
         display: 'flex',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
-        boxShadow: '0 14px 36px rgba(90,40,140,.20), inset 0 1px 0 rgba(255,255,255,0.6)',
+        boxShadow: '0 18px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08)',
         zIndex: 30,
       }}
     >
@@ -51,17 +53,16 @@ export function TabBar({
           style={{
             width: 60,
             height: 60,
-            borderRadius: 21,
-            background: 'linear-gradient(135deg,#FF6CB6,#FF4D6D)',
+            borderRadius: 20,
+            background: 'linear-gradient(160deg,#d4ff63,#aee03f)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 9px 18px rgba(255,77,109,.42),0 4px 0 #D81E4A',
+            boxShadow: '0 10px 24px rgba(198,242,78,.35), 0 0 0 5px rgba(11,13,19,1)',
             marginTop: -30,
-            border: '4px solid #fff',
           }}
         >
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="27" height="27" viewBox="0 0 24 24" fill="none" stroke="#0B0D13" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
             <path d="M5 8h2.5l1.3-2h6.4l1.3 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" />
             <circle cx="12" cy="13" r="3.2" />
           </svg>
@@ -102,7 +103,7 @@ function TabButton({
       <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round">
         {children}
       </svg>
-      <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 10.5, color }}>{label}</span>
+      <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 10.5, letterSpacing: '.2px', color }}>{label}</span>
     </button>
   )
 }

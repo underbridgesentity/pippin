@@ -3,6 +3,7 @@ import { IOSDevice } from './components/IOSDevice'
 import { TabBar, type Tab } from './components/TabBar'
 import { Toast } from './components/Toast'
 import { Mascot } from './components/Mascot'
+import { T } from './lib/theme'
 import { Home } from './screens/Home'
 import { Quests } from './screens/Quests'
 import { Squad } from './screens/Squad'
@@ -130,9 +131,9 @@ function Root() {
 
 function Splash() {
   return (
-    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: 'radial-gradient(circle at 50% 30%,#FBEBFF,#F4EFFF 60%)' }}>
+    <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: `radial-gradient(circle at 50% 30%,${T.bgElev},${T.bg} 60%)` }}>
       <Mascot stage="Sprout" size={92} float />
-      <div style={{ fontFamily: 'Fredoka', fontWeight: 700, fontSize: 34, color: '#7C3AF6' }}>Fettle</div>
+      <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 34, color: T.accent }}>Fettle</div>
     </div>
   )
 }

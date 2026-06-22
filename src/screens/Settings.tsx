@@ -4,6 +4,7 @@ import { GOAL_OPTIONS } from '../data'
 import { actions, useStore } from '../lib/store'
 import { ACTIVITY_OPTIONS, bodyComplete, recommendedCalories } from '../lib/nutrition'
 import { num } from '../lib/format'
+import { T, card, inset, eyebrow } from '../lib/theme'
 import type { ActivityLevel, Body, Goal, Sex } from '../lib/types'
 
 const SEX_OPTIONS: { id: Sex; label: string }[] = [
@@ -56,7 +57,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
           </Row>
           <Row>
             <Label>Email</Label>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#6E6596' }}>{account.email}</span>
+            <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 15, color: T.dim }}>{account.email}</span>
           </Row>
         </Section>
 
@@ -82,7 +83,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
             </div>
           </Row>
           <div style={{ padding: '12px 0 4px' }}>
-            <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596', marginBottom: 8, paddingLeft: 2 }}>Activity level</div>
+            <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 12, color: T.dim, marginBottom: 8, paddingLeft: 2 }}>Activity level</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
               {ACTIVITY_OPTIONS.map((o) => (
                 <button key={o.id} onClick={() => { setActivity(o.id); saveBody({ activity: o.id }) }} style={pill(activity === o.id)}>{o.label}</button>
@@ -91,9 +92,9 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
           </div>
         </Section>
         {recommended != null && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: '#EFE7FF', borderRadius: 16, padding: '12px 14px', marginTop: -8, marginBottom: 18 }}>
+          <div style={{ ...inset, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', marginTop: -8, marginBottom: 18 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>🎯</span>
-            <span style={{ fontFamily: 'Nunito', fontWeight: 700, fontSize: 13, color: '#5B22C9', lineHeight: 1.35 }}>
+            <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 13, color: T.accent, lineHeight: 1.35 }}>
               Personalized target: <b>{num(recommended)} kcal/day</b>, from your stats and goal. Fine-tune it below if you like.
             </span>
           </div>
@@ -118,7 +119,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
                 <button
                   key={g.id}
                   onClick={() => actions.updateGoal(g.id as Goal)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: sel ? g.tint : '#fff', border: `2px solid ${sel ? g.color : '#ECE6FA'}`, borderRadius: 14, padding: '9px 12px', cursor: 'pointer', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, color: '#241544' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: sel ? T.accentDim : T.glass, border: `2px solid ${sel ? g.color : T.line}`, borderRadius: 14, padding: '9px 12px', cursor: 'pointer', fontFamily: T.display, fontWeight: 600, fontSize: 13, color: T.text }}
                 >
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: g.color }} /> {g.label}
                 </button>
@@ -130,7 +131,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
         <button
           onClick={() => { onClose(); actions.logOut() }}
           className="pressable"
-          style={{ width: '100%', background: '#FFE7EC', color: '#FF4D6D', border: 'none', borderRadius: 16, padding: 15, fontFamily: 'Fredoka', fontWeight: 600, fontSize: 16, cursor: 'pointer', marginTop: 8 }}
+          style={{ width: '100%', background: T.glass, color: T.rose, border: `1px solid ${T.line}`, borderRadius: 16, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer', marginTop: 8 }}
         >
           Log out
         </button>
@@ -142,28 +143,28 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: 18 }}>
-      <div style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 12, color: '#6E6596', textTransform: 'uppercase', letterSpacing: '.4px', padding: '0 4px 8px' }}>{title}</div>
-      <div style={{ background: '#fff', borderRadius: 18, padding: '4px 14px', boxShadow: '0 5px 14px rgba(120,60,180,.05)' }}>{children}</div>
+      <div style={{ ...eyebrow, letterSpacing: '.4px', padding: '0 4px 8px' }}>{title}</div>
+      <div style={{ ...card, padding: '4px 14px' }}>{children}</div>
     </div>
   )
 }
 function Row({ children, last }: { children: React.ReactNode; last?: boolean }) {
-  return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 0', borderBottom: last ? 'none' : '1px solid #F2ECFB' }}>{children}</div>
+  return <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 0', borderBottom: last ? 'none' : `1px solid ${T.lineSoft}` }}>{children}</div>
 }
 function Label({ children }: { children: React.ReactNode }) {
-  return <span style={{ fontFamily: 'Fredoka', fontWeight: 600, fontSize: 15, color: '#241544', flex: 'none' }}>{children}</span>
+  return <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text, flex: 'none' }}>{children}</span>
 }
-const input: React.CSSProperties = { flex: 1, maxWidth: 200, background: '#F4EFFF', border: '2px solid #ECE6FA', borderRadius: 12, padding: '8px 12px', fontFamily: 'Nunito', fontWeight: 700, fontSize: 15, color: '#241544', outline: 'none' }
+const input: React.CSSProperties = { flex: 1, maxWidth: 200, background: T.glass, border: `1px solid ${T.line}`, borderRadius: 12, padding: '8px 12px', fontFamily: T.body, fontWeight: 700, fontSize: 15, color: T.text, outline: 'none' }
 
 function UnitInput({ value, onChange, onBlur, unit }: { value: string; onChange: (v: string) => void; onBlur: () => void; unit: string }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
       <input type="number" inputMode="numeric" value={value} onChange={(e) => onChange(e.target.value)} onBlur={onBlur} style={{ ...input, maxWidth: 84, textAlign: 'right' }} />
-      <span style={{ fontFamily: 'Nunito', fontWeight: 800, fontSize: 13, color: '#6E6596', width: 26, flex: 'none' }}>{unit}</span>
+      <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 13, color: T.dim, width: 26, flex: 'none' }}>{unit}</span>
     </div>
   )
 }
 
 function pill(active: boolean): React.CSSProperties {
-  return { background: active ? '#7C3AF6' : '#F4EFFF', color: active ? '#fff' : '#6E6596', border: `2px solid ${active ? '#7C3AF6' : '#ECE6FA'}`, borderRadius: 12, padding: '7px 12px', fontFamily: 'Fredoka', fontWeight: 600, fontSize: 13, cursor: 'pointer' }
+  return { background: active ? T.accent : T.glass, color: active ? T.ink : T.dim, border: `1px solid ${active ? T.accent : T.line}`, borderRadius: 12, padding: '7px 12px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }
 }

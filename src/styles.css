@@ -1,20 +1,18 @@
 :root {
-  --font-display: 'Fredoka', system-ui, sans-serif;
-  --font-body: 'Nunito', system-ui, sans-serif;
+  --font-display: 'Bricolage Grotesque', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
 
-  /* Fettle candy-bright palette */
-  --grape: #7C3AF6;
-  --grape-deep: #5B22C9;
-  --grape-light: #9B5CFF;
-  --ink: #241544;
-  --muted: #6E6596;
-  --mint: #18C98A;
-  --tangerine: #FF8A1E;
-  --lemon: #FFC53D;
-  --coral: #FF4D6D;
-  --pink: #FF6CB6;
-  --sky: #2BB7F2;
-  --lilac-bg: #F4EFFF;
+  /* Fettle "Midnight Glass" palette */
+  --bg: #0b0d13;
+  --bg-elev: #10131b;
+  --surface: rgba(255, 255, 255, 0.045);
+  --line: rgba(255, 255, 255, 0.09);
+  --text: #eaecf3;
+  --muted: #9498a8;
+  --faint: #5e6373;
+  --accent: #c6f24e;
+  --ink: #0b0d13;
+  --lilac-bg: #0b0d13;
 }
 
 * {
@@ -28,6 +26,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
 }
 
 #root {
@@ -155,7 +155,7 @@ button {
   justify-content: center;
   min-height: 100vh;
   width: 100%;
-  background: radial-gradient(circle at 18% 8%, #fbebff, #efe6ff 38%, #e5f4ff 100%);
+  background: radial-gradient(circle at 50% -10%, #1a1f2c, #0b0d13 60%);
   padding: 32px;
 }
 
@@ -163,6 +163,6 @@ button {
 @media (max-width: 640px) {
   .fettle-stage {
     padding: 0;
-    background: var(--lilac-bg);
+    background: var(--bg);
   }
 }
