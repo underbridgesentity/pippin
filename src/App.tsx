@@ -133,7 +133,7 @@ function Splash() {
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14, background: `radial-gradient(circle at 50% 30%,${T.bgElev},${T.bg} 60%)` }}>
       <Mascot stage="Sprout" size={92} float />
-      <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 34, color: T.accent }}>Fettle</div>
+      <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 34, color: T.accent }}>Pippin</div>
     </div>
   )
 }

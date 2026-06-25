@@ -1,4 +1,4 @@
-// Pip, the Fettle mascot. A friendly green fruit sprout. The body stays
+// Pip, the Pippin mascot. A friendly green fruit sprout. The body stays
 // green at every stage so Pip is always recognisable (like Duo is always
 // green); the stage only adds a small flourish (a bloom, a crown) as you
 // evolve: Seed -> Sprout -> Bloomer -> Legend.

@@ -1,4 +1,4 @@
-// Domain types for Fettle. These describe the real, persisted data model,
+// Domain types for Pippin. These describe the real, persisted data model,
 // no mock-only shapes. The storage layer (lib/api.ts) is written against these
 // so it can be swapped for a remote backend later without touching the UI.
 

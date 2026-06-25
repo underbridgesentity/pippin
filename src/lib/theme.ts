@@ -1,4 +1,4 @@
-// Fettle "Daylight" design system. A warm, soft, playful-modern LIGHT
+// Pippin "Daylight" design system. A warm, soft, playful-modern LIGHT
 // aesthetic inspired by Family (family.co): a warm paper canvas, soft
 // physical depth (diffuse shadows, no harsh borders), generously rounded
 // squircle shapes, a friendly colourful spectrum, and a fresh green

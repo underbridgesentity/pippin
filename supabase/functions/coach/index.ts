@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
     return json({ plan: null }, 400)
   }
 
-  const prompt = `You are Fettle's friendly wellness coach. Using the user's goal, stats, and today's progress, give short, practical, encouraging recommendations. This is GENERAL WELLNESS guidance, not medical or clinical advice: never diagnose, never prescribe, and avoid extreme or unsafe suggestions (no crash diets, no overtraining).
+  const prompt = `You are Pippin's friendly wellness coach. Using the user's goal, stats, and today's progress, give short, practical, encouraging recommendations. This is GENERAL WELLNESS guidance, not medical or clinical advice: never diagnose, never prescribe, and avoid extreme or unsafe suggestions (no crash diets, no overtraining).
 
 Return:
 - eat: 2 or 3 specific food or meal ideas that fit the REMAINING calories today and support the goal. Each has a short title and a one-line detail (why it fits, with a rough calorie figure).

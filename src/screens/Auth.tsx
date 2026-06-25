@@ -234,7 +234,7 @@ function Welcome() {
       <div style={{ marginBottom: 8, display: 'flex', justifyContent: 'center' }}>
         <Mascot stage="Sprout" size={128} float />
       </div>
-      <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 44, letterSpacing: '-1px', color: GRAPE, lineHeight: 1, marginBottom: 6 }}>Fettle</div>
+      <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 44, letterSpacing: '-1px', color: GRAPE, lineHeight: 1, marginBottom: 6 }}>Pippin</div>
       <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 23, color: T.text, lineHeight: 1.2, marginBottom: 10 }}>
         Reach your goals.
         <br />
@@ -278,12 +278,12 @@ function GoalPicker({ goal, onPick }: { goal: Goal; onPick: (g: Goal) => void })
 
 function HowItWorks() {
   const rows = [
-    { tint: T.glassHi, stroke: T.green, title: 'Snap your meals', sub: 'Fettle counts the calories instantly.', icon: <><path d="M5 8h2.5l1.3-2h6.4l1.3 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" /><circle cx="12" cy="13" r="3.2" /></> },
+    { tint: T.glassHi, stroke: T.green, title: 'Snap your meals', sub: 'Pippin counts the calories instantly.', icon: <><path d="M5 8h2.5l1.3-2h6.4l1.3 2H19a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2Z" /><circle cx="12" cy="13" r="3.2" /></> },
     { tint: T.glassHi, stroke: T.amber, title: 'Join challenges', sub: 'Team up with friends to hit goals.', icon: <><path d="M7 4h10v4a5 5 0 0 1-10 0V4Z" /><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M9 20h6M12 13v4" /></> },
   ]
   return (
     <div style={{ width: '100%', animation: 'pep-pop .4s ease' }}>
-      <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 28, color: T.text, marginBottom: 22 }}>How Fettle works</div>
+      <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 28, color: T.text, marginBottom: 22 }}>How Pippin works</div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14, textAlign: 'left' }}>
         {rows.map((r) => (
           <div key={r.title} style={{ ...card, display: 'flex', alignItems: 'center', gap: 15, padding: 16 }}>

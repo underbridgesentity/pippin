@@ -202,7 +202,7 @@ function RealFriends() {
     if (!username) return actions.toast('Pick a username first')
     const link = `${window.location.origin}/?add=${encodeURIComponent(username)}`
     const nav = navigator as Navigator & { share?: (d: ShareData) => Promise<void> }
-    if (nav.share) nav.share({ title: 'Add me on Fettle', text: 'Be my friend on Fettle 💪', url: link }).catch(() => {})
+    if (nav.share) nav.share({ title: 'Add me on Pippin', text: 'Be my friend on Pippin 💪', url: link }).catch(() => {})
     else {
       navigator.clipboard?.writeText(link)
       actions.toast('Invite link copied')

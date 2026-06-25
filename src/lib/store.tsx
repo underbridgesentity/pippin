@@ -66,7 +66,7 @@ function freshUserData(account: Account, goal: Goal): UserState {
   return {
     ...defaultState(goal, Date.now()),
     badges: { 'first-steps': Date.now() },
-    feed: [makeMyFeed(account, 'badge', 'joined Fettle and earned First Steps', { badge: 'First Steps' })],
+    feed: [makeMyFeed(account, 'badge', 'joined Pippin and earned First Steps', { badge: 'First Steps' })],
   }
 }
 
@@ -231,7 +231,7 @@ export const actions = {
     const data: UserState = {
       ...base,
       badges: { 'first-steps': Date.now() },
-      feed: [makeMyFeed(account, 'badge', 'joined Fettle and earned First Steps', { badge: 'First Steps' })],
+      feed: [makeMyFeed(account, 'badge', 'joined Pippin and earned First Steps', { badge: 'First Steps' })],
     }
     void api.saveState(account.id, data)
     current = { ...current, account, data, community: null }
@@ -246,7 +246,7 @@ export const actions = {
     current = { ...current, data: next }
     if (account) void api.saveState(account.id, next)
     emit()
-    setToast('Welcome to Fettle! 🎉')
+    setToast('Welcome to Pippin! 🎉')
   },
 
   async logIn(input: { email: string; password: string }) {

@@ -1,9 +1,9 @@
 {
-  "name": "fettle",
+  "name": "pippin",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Fettle — a gamified fitness & wellness community app. Snap your meals, crush challenges with friends, and celebrate every win.",
+  "description": "Pippin: a gamified fitness & wellness community app. Snap your meals, crush challenges with friends, and celebrate every win.",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

@@ -1,4 +1,4 @@
-// The seeded community: the people of Fettle and the supportive content they
+// The seeded community: the people of Pippin and the supportive content they
 // share. The current user is real and computed; this gives a warm, encouraging
 // social context to act within. Becomes real users once Supabase is connected.
 

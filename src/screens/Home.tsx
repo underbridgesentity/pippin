@@ -412,7 +412,7 @@ function FeedCard({ post, now, onOpenPost, onOpenMember }: { post: DecoratedFeed
             <div style={{ position: 'relative', height: 148, borderRadius: 18, background: post.photo, marginBottom: 10, overflow: 'hidden' }}>
               <div style={{ position: 'absolute', left: 10, bottom: 10, display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(11,13,19,.82)', padding: '6px 11px', borderRadius: 14 }}>
                 <svg width="13" height="13" viewBox="0 0 24 24" fill={T.accent}><path d="M12 2l2 5 5 .5-4 3.5 1 5-4-2.5L8 19l1-5-4-3.5 5-.5 2-5Z" /></svg>
-                <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.text }}>Fettle counted it</span>
+                <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.text }}>Pippin counted it</span>
               </div>
             </div>
           )

@@ -23,7 +23,7 @@ function enabledProviders(): SocialProvider[] {
 type ProfileRow = { id: string; name: string; avatar: string; total_xp: number; weekly_xp: number; created_at?: string; username?: string | null }
 
 function toFriendProfile(p: { id: string; name: string; username?: string | null; avatar?: string | null }): FriendProfile {
-  return { id: p.id, name: p.name || 'Fettler', username: p.username ?? null, avatar: p.avatar || gradientFor(p.id) }
+  return { id: p.id, name: p.name || 'Friend', username: p.username ?? null, avatar: p.avatar || gradientFor(p.id) }
 }
 
 export function createSupabaseApi(url: string, anonKey: string): FettleApi {
@@ -46,7 +46,7 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
     return {
       id: uid,
       email,
-      name: prof?.name ?? (session.user.user_metadata?.name as string) ?? 'Fettler',
+      name: prof?.name ?? (session.user.user_metadata?.name as string) ?? 'Friend',
       avatar: prof?.avatar || gradientFor(email || uid),
       passwordHash: '',
       createdAt: prof?.created_at ? Date.parse(prof.created_at) : Date.now(),

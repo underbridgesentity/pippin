@@ -1,5 +1,5 @@
 // Definitions for the social layer: reaction types and post types, with the
-// playful, encouraging vocabulary that gives Fettle its supportive feel.
+// playful, encouraging vocabulary that gives Pippin its supportive feel.
 
 import type { Mood, PostType, ReactionKind } from './types'
 
