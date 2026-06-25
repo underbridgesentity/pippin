@@ -3,7 +3,7 @@ import { Sheet } from '../components/Sheet'
 import { estimateBurn, stepsToKm } from '../lib/gamification'
 import { num } from '../lib/format'
 import { actions } from '../lib/store'
-import { T } from '../lib/theme'
+import { T, softTile } from '../lib/theme'
 import type { ActivityKind } from '../lib/types'
 
 const KINDS: { id: ActivityKind; label: string; emoji: string; usesDistance: boolean }[] = [
@@ -51,7 +51,7 @@ export function AddActivity({ open, onClose }: { open: boolean; onClose: () => v
             <button
               key={k.id}
               onClick={() => setKind(k.id)}
-              style={{ flex: '1 0 28%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: kind === k.id ? T.glassHi : T.glass, border: `2px solid ${kind === k.id ? T.accent : T.line}`, borderRadius: 18, padding: '12px 6px', cursor: 'pointer' }}
+              style={{ flex: '1 0 28%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: kind === k.id ? T.accentDim : T.glass, border: `1px solid ${kind === k.id ? T.accent : T.line}`, borderRadius: T.r.md, padding: '12px 6px', cursor: 'pointer' }}
             >
               <span style={{ fontSize: 24 }}>{k.emoji}</span>
               <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 13, color: kind === k.id ? T.accent : T.text }}>{k.label}</span>
@@ -68,7 +68,7 @@ export function AddActivity({ open, onClose }: { open: boolean; onClose: () => v
           </>
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(255,184,107,0.12)', border: `1px solid ${T.line}`, borderRadius: 16, padding: '14px 16px', margin: '6px 0 18px' }}>
+        <div style={{ ...softTile(T.amber), display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderRadius: T.r.lg, padding: '14px 16px', margin: '6px 0 18px' }}>
           <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim }}>Estimated burn</span>
           <span style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.amber }}>{num(burnPreview)} kcal</span>
         </div>
@@ -76,7 +76,7 @@ export function AddActivity({ open, onClose }: { open: boolean; onClose: () => v
         <button
           onClick={log}
           className="pressable"
-          style={{ width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: 18, padding: 16, fontFamily: T.display, fontWeight: 600, fontSize: 18, cursor: 'pointer', ['--press-y' as string]: '3px' }}
+          style={{ width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 16, fontFamily: T.display, fontWeight: 600, fontSize: 18, cursor: 'pointer', ['--press-y' as string]: '3px' }}
         >
           Log activity · +30 XP
         </button>

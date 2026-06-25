@@ -7,7 +7,7 @@ import { useStore, actions } from '../lib/store'
 import { useDerived, useFeed } from '../lib/hooks'
 import { REACTION_BY_KIND } from '../lib/social'
 import { coachAvailable, cachedPlan, fetchCoachPlan, type CoachCtx } from '../lib/coach'
-import { T, card, inset, eyebrow } from '../lib/theme'
+import { T, card, inset, eyebrow, softTile, hexA } from '../lib/theme'
 import { dayKey, firstName, greeting, longDate, num, relativeTime } from '../lib/format'
 import type { DecoratedFeed } from '../lib/selectors'
 import type { Goal, MealEntry, Mood, ReactionKind } from '../lib/types'
@@ -114,7 +114,7 @@ export function Home({
             <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text }}>Level {d.level} · {d.stageName}</span>
             <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim }}>{d.xpInto} / {d.xpNeed} XP</span>
           </div>
-          <ProgressBar pct={d.xpPct} fill={T.accent} track="rgba(255,255,255,0.08)" />
+          <ProgressBar pct={d.xpPct} fill={T.accent} track="rgba(40,33,22,0.08)" />
         </div>
       </div>
 
@@ -150,20 +150,20 @@ export function Home({
       />
 
       {/* daily quest */}
-      <div style={{ ...card, padding: '16px 18px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', background: T.accentDim, filter: 'blur(8px)' }} />
+      <div style={{ ...card, background: hexA(T.violet, 0.13), boxShadow: 'none', padding: '16px 18px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
+        <div style={{ position: 'absolute', right: -28, top: -28, width: 120, height: 120, borderRadius: '50%', background: hexA(T.violet, 0.16), filter: 'blur(6px)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 10, position: 'relative' }}>
-          <svg width="15" height="15" viewBox="0 0 24 24" fill={T.accent}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
-          <span style={{ ...eyebrow }}>Daily Quest</span>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill={T.violet}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
+          <span style={{ ...eyebrow, color: T.violet }}>Daily Quest</span>
         </div>
         <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 18, color: T.text, marginBottom: 12, position: 'relative' }}>Snap {d.quest.target} meals today <span style={{ color: T.dim }}>· {d.quest.done}/{d.quest.target}</span></div>
-        <ProgressBar pct={d.quest.pct} fill={T.accent} track="rgba(255,255,255,0.08)" height={10} />
+        <ProgressBar pct={d.quest.pct} fill={T.violet} track={hexA(T.violet, 0.18)} height={10} />
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 10, position: 'relative' }}>
           <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim }}>Reward: +50 XP &amp; a Streak Shield</span>
           {d.quest.claimable && (
-            <button onClick={() => actions.claimQuest()} className="pressable" style={{ background: T.accent, color: T.ink, border: 'none', borderRadius: 12, padding: '8px 16px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Claim</button>
+            <button onClick={() => actions.claimQuest()} className="pressable" style={{ background: T.violet, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: '8px 18px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>Claim</button>
           )}
-          {d.quest.claimed && <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.accent }}>Claimed ✓</span>}
+          {d.quest.claimed && <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.violet }}>Claimed ✓</span>}
         </div>
       </div>
 
@@ -259,7 +259,7 @@ function CoachCard({ ctx }: { ctx: CoachCtx }) {
 
       {!plan && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 12 }}>
-          <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2.5px solid rgba(255,255,255,0.1)', borderTopColor: T.accent, display: 'inline-block', animation: 'pep-spin .8s linear infinite', flex: 'none' }} />
+          <span style={{ width: 18, height: 18, borderRadius: '50%', border: '2.5px solid rgba(40,33,22,0.12)', borderTopColor: T.accent, display: 'inline-block', animation: 'pep-spin .8s linear infinite', flex: 'none' }} />
           <span style={{ fontFamily: T.body, fontWeight: 600, fontSize: 14, color: T.dim }}>Building your plan...</span>
         </div>
       )}
@@ -345,7 +345,7 @@ function CoachBlock({ label, children }: { label: string; children: React.ReactN
 function Stat({ stroke, value, label, icon }: { stroke: string; value: string; label: string; icon: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <div style={{ width: 34, height: 34, borderRadius: 11, ...inset, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+      <div style={{ width: 36, height: 36, borderRadius: 13, ...softTile(stroke), display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={stroke} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">{icon}</svg>
       </div>
       <div>

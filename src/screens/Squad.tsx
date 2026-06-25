@@ -9,7 +9,7 @@ import { MOOD_BY_ID } from '../lib/social'
 import { CIRCLES, CIRCLE_BY_ID, MEMBERS } from '../lib/seed'
 import type { Derived, LeaderRow } from '../lib/selectors'
 import type { SeedMember } from '../lib/seed'
-import { T, card, inset, eyebrow } from '../lib/theme'
+import { T, card, inset, eyebrow, softTile, hexA } from '../lib/theme'
 
 const TABS = ['Leaderboard', 'Friends', 'Circles'] as const
 type Tab = (typeof TABS)[number]
@@ -58,7 +58,7 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
                 <div style={{ ...card, padding: '18px 14px 16px', marginBottom: 16 }}>
                   <div style={{ textAlign: 'center', fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text, marginBottom: 14 }}>This Week's Champions</div>
                   <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: 10 }}>
-                    <Podium row={top[1]} place={2} avatarSize={54} fontSize={20} barHeight={42} barBg="rgba(255,255,255,0.08)" ring={T.line} badge={T.dim} xpColor={T.dim} onOpen={() => !top[1].you && onOpenMember(top[1].id)} />
+                    <Podium row={top[1]} place={2} avatarSize={54} fontSize={20} barHeight={42} barBg="rgba(40,33,22,0.08)" ring={T.line} badge={T.dim} xpColor={T.dim} onOpen={() => !top[1].you && onOpenMember(top[1].id)} />
                     <div style={{ flex: 1, textAlign: 'center' }}>
                       <svg width="22" height="18" viewBox="0 0 24 20" style={{ marginBottom: 2 }}><path d="M2 5l5 4 5-7 5 7 5-4-2 12H4L2 5Z" fill={T.accent} /></svg>
                       <button onClick={() => !top[0].you && onOpenMember(top[0].id)} style={{ border: 'none', background: 'none', padding: 0, cursor: top[0].you ? 'default' : 'pointer', display: 'block', margin: '0 auto' }}>
@@ -73,7 +73,7 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
                         <span style={{ fontFamily: T.display, fontWeight: 700, fontSize: 26, color: T.accent, lineHeight: 1 }}>1</span>
                       </div>
                     </div>
-                    <Podium row={top[2]} place={3} avatarSize={54} fontSize={20} barHeight={32} barBg="rgba(255,255,255,0.08)" ring={T.amber} badge={T.amber} xpColor={T.dim} onOpen={() => !top[2].you && onOpenMember(top[2].id)} />
+                    <Podium row={top[2]} place={3} avatarSize={54} fontSize={20} barHeight={32} barBg="rgba(40,33,22,0.08)" ring={T.amber} badge={T.amber} xpColor={T.dim} onOpen={() => !top[2].you && onOpenMember(top[2].id)} />
                   </div>
                 </div>
               )}
@@ -333,10 +333,10 @@ function FriendRow({ m, onOpen, action }: { m: SeedMember; onOpen: () => void; a
 }
 
 function AddBtn({ onClick }: { onClick: () => void }) {
-  return <button onClick={onClick} className="pressable" style={{ background: T.accent, color: T.ink, border: 'none', borderRadius: 13, padding: '9px 16px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>+ Add</button>
+  return <button onClick={onClick} className="pressable" style={{ background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: '9px 16px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>+ Add</button>
 }
 function NudgeBtn({ onClick }: { onClick: () => void }) {
-  return <button onClick={onClick} style={{ background: 'rgba(255,184,107,0.14)', color: T.amber, border: 'none', borderRadius: 13, padding: '9px 14px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>👋 Nudge</button>
+  return <button onClick={onClick} style={{ background: hexA(T.amber, 0.14), color: T.amber, border: 'none', borderRadius: 13, padding: '9px 14px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', flex: 'none' }}>👋 Nudge</button>
 }
 
 function BuddySection({ d, onCheckIn, onOpenMember }: { d: Derived; onCheckIn: () => void; onOpenMember: (id: string) => void }) {
@@ -405,7 +405,7 @@ function BuddySection({ d, onCheckIn, onOpenMember }: { d: Derived; onCheckIn: (
 function CircleRow({ c, joined, onOpen }: { c: (typeof CIRCLES)[number]; joined?: boolean; onOpen: () => void }) {
   return (
     <button onClick={onOpen} style={{ ...card, display: 'flex', alignItems: 'center', gap: 13, width: '100%', borderRadius: 22, padding: 14, cursor: 'pointer', textAlign: 'left' }}>
-      <div style={{ ...inset, width: 52, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flex: 'none' }}>{c.emoji}</div>
+      <div style={{ ...softTile(T.violet), width: 52, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flex: 'none' }}>{c.emoji}</div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 16, color: T.text }}>{c.name}</div>
         <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.count} members · {c.goal}</div>
@@ -413,7 +413,7 @@ function CircleRow({ c, joined, onOpen }: { c: (typeof CIRCLES)[number]; joined?
       {joined ? (
         <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.green, background: 'rgba(91,227,154,0.14)', padding: '5px 11px', borderRadius: 12, flex: 'none' }}>Joined</span>
       ) : (
-        <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 13, color: T.accent, background: T.accentDim, padding: '8px 14px', borderRadius: 13, flex: 'none' }}>View</span>
+        <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 13, color: T.ink, background: T.accent, padding: '8px 14px', borderRadius: T.r.pill, flex: 'none' }}>View</span>
       )}
     </button>
   )

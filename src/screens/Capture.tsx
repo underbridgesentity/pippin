@@ -6,7 +6,7 @@ import { num } from '../lib/format'
 import { actions } from '../lib/store'
 import { analyzeMeal, analyzerAvailable } from '../lib/analyze'
 import type { LoggedFood, MealType } from '../lib/types'
-import { T, card, inset } from '../lib/theme'
+import { T, card, inset, softTile } from '../lib/theme'
 
 const MEAL_TYPES: { id: MealType; label: string }[] = [
   { id: 'breakfast', label: 'Breakfast' },
@@ -306,7 +306,7 @@ function LogScreen({
 
       <div style={{ padding: '16px 18px 24px' }}>
         {detected != null && detected > 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...inset, padding: '12px 14px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...softTile(T.green), padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>✨</span>
             <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.green, lineHeight: 1.3 }}>
               Found {detected} item{detected === 1 ? '' : 's'} from your photo. Check it over, then add or edit below.
@@ -314,7 +314,7 @@ function LogScreen({
           </div>
         )}
         {detected === 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...inset, padding: '12px 14px', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, ...softTile(T.amber), padding: '12px 14px', marginBottom: 14 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>🔍</span>
             <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.amber, lineHeight: 1.3 }}>
               Couldn't auto-detect this one. Search and add the foods below.
@@ -417,7 +417,7 @@ function SaveFooter({ items, totals, onSave }: { items: LoggedFood[]; totals: { 
         onClick={onSave}
         disabled={!items.length}
         className="pressable"
-        style={{ background: items.length ? T.accent : T.glassHi, color: items.length ? T.ink : T.faint, border: 'none', borderRadius: 20, padding: 17, fontFamily: T.display, fontWeight: 600, fontSize: 19, cursor: items.length ? 'pointer' : 'default', width: '100%', ['--press-y' as string]: '3px' }}
+        style={{ background: items.length ? T.accent : T.glassHi, color: items.length ? T.ink : T.faint, border: 'none', borderRadius: T.r.pill, padding: 17, fontFamily: T.display, fontWeight: 600, fontSize: 19, cursor: items.length ? 'pointer' : 'default', width: '100%', ['--press-y' as string]: '3px' }}
       >
         {items.length ? 'Log meal · +45 XP' : 'Add a food to log'}
       </button>
@@ -433,5 +433,5 @@ function Stepper({ onClick, label }: { onClick: () => void; label: string }) {
   )
 }
 
-const iconBtn: React.CSSProperties = { width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,.18)', border: '1px solid rgba(255,255,255,0.22)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
-const squareBtn: React.CSSProperties = { width: 48, height: 48, borderRadius: 14, background: 'rgba(255,255,255,.16)', border: '1px solid rgba(255,255,255,0.22)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+const iconBtn: React.CSSProperties = { width: 40, height: 40, borderRadius: '50%', background: 'rgba(11,13,19,.55)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }
+const squareBtn: React.CSSProperties = { width: 48, height: 48, borderRadius: 14, background: 'rgba(11,13,19,.5)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }

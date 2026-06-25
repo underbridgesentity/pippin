@@ -4,7 +4,7 @@ import { GOAL_OPTIONS } from '../data'
 import { actions, useStore } from '../lib/store'
 import { ACTIVITY_OPTIONS, bodyComplete, recommendedCalories } from '../lib/nutrition'
 import { num } from '../lib/format'
-import { T, card, inset, eyebrow } from '../lib/theme'
+import { T, card, eyebrow, softTile } from '../lib/theme'
 import type { ActivityLevel, Body, Goal, Sex } from '../lib/types'
 
 const SEX_OPTIONS: { id: Sex; label: string }[] = [
@@ -92,7 +92,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
           </div>
         </Section>
         {recommended != null && (
-          <div style={{ ...inset, display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', marginTop: -8, marginBottom: 18 }}>
+          <div style={{ ...softTile(T.accent), display: 'flex', alignItems: 'center', gap: 10, padding: '12px 14px', marginTop: -8, marginBottom: 18 }}>
             <span style={{ fontSize: 18, flex: 'none' }}>🎯</span>
             <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 13, color: T.accent, lineHeight: 1.35 }}>
               Personalized target: <b>{num(recommended)} kcal/day</b>, from your stats and goal. Fine-tune it below if you like.
@@ -119,7 +119,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
                 <button
                   key={g.id}
                   onClick={() => actions.updateGoal(g.id as Goal)}
-                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: sel ? T.accentDim : T.glass, border: `2px solid ${sel ? g.color : T.line}`, borderRadius: 14, padding: '9px 12px', cursor: 'pointer', fontFamily: T.display, fontWeight: 600, fontSize: 13, color: T.text }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 8, background: sel ? T.accentDim : T.glass, border: `1px solid ${sel ? T.accent : T.line}`, borderRadius: T.r.sm, padding: '9px 12px', cursor: 'pointer', fontFamily: T.display, fontWeight: 600, fontSize: 13, color: sel ? T.accent : T.text }}
                 >
                   <span style={{ width: 10, height: 10, borderRadius: '50%', background: g.color }} /> {g.label}
                 </button>
@@ -131,7 +131,7 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
         <button
           onClick={() => { onClose(); actions.logOut() }}
           className="pressable"
-          style={{ width: '100%', background: T.glass, color: T.rose, border: `1px solid ${T.line}`, borderRadius: 16, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer', marginTop: 8 }}
+          style={{ width: '100%', background: T.glass, color: T.rose, border: `1px solid ${T.line}`, borderRadius: T.r.pill, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer', marginTop: 8 }}
         >
           Log out
         </button>

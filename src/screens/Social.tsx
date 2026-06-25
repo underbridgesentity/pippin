@@ -9,7 +9,7 @@ import { CIRCLE_BY_ID, MEMBER_BY_ID } from '../lib/seed'
 import { relativeTime, num } from '../lib/format'
 import { buildCircleFeed, circleGoalProgress, type DecoratedFeed } from '../lib/selectors'
 import type { Comment, Mood, PostType } from '../lib/types'
-import { T, card, inset, eyebrow } from '../lib/theme'
+import { T, card, inset, eyebrow, hexA } from '../lib/theme'
 
 // ── Comments + reactions thread ──────────────────────────────────────────────
 export function CommentsSheet({ post, onClose, onOpenMember }: { post: DecoratedFeed | null; onClose: () => void; onOpenMember: (id: string) => void }) {
@@ -46,7 +46,7 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
             <div style={{ fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 12, color: T.dim }}>{post.action} · {relativeTime(post.at)}</div>
           </div>
           {isMine && (
-            <button onClick={() => { actions.deletePost(post.id); onClose() }} aria-label="Delete post" style={{ width: 34, height: 34, borderRadius: 11, background: 'rgba(255,122,147,0.14)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+            <button onClick={() => { actions.deletePost(post.id); onClose() }} aria-label="Delete post" style={{ width: 34, height: 34, borderRadius: 11, background: hexA(T.rose, 0.14), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.rose} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
             </button>
           )}
@@ -64,10 +64,10 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
               <button
                 key={r.kind}
                 onClick={() => actions.react(post.id, r.kind)}
-                style={{ display: 'flex', alignItems: 'center', gap: 6, background: active ? r.color : T.glass, border: `2px solid ${active ? r.color : T.line}`, borderRadius: 14, padding: '7px 12px', cursor: 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 6, background: active ? hexA(r.color, 0.15) : T.glass, border: `2px solid ${active ? r.color : T.line}`, borderRadius: 14, padding: '7px 12px', cursor: 'pointer' }}
               >
                 <span style={{ fontSize: 16, animation: active ? 'pep-cheer .35s ease' : undefined }}>{r.emoji}</span>
-                <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 13, color: active ? T.ink : T.dim }}>{count}</span>
+                <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 13, color: active ? r.color : T.dim }}>{count}</span>
               </button>
             )
           })}
@@ -98,7 +98,7 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
               style={{ flex: 1, border: 'none', outline: 'none', background: 'none', fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 14, color: T.text, minWidth: 0 }}
             />
             <button onClick={() => setTip((t) => !t)} aria-label="Mark as tip" title="Mark as tip" style={{ width: 30, height: 30, borderRadius: 9, background: tip ? T.accentDim : 'transparent', border: 'none', cursor: 'pointer', fontSize: 15 }}>💡</button>
-            <button onClick={send} disabled={!text.trim()} aria-label="Send" style={{ width: 34, height: 34, borderRadius: 11, background: text.trim() ? T.accent : T.glassHi, border: 'none', cursor: text.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <button onClick={send} disabled={!text.trim()} aria-label="Send" style={{ width: 34, height: 34, borderRadius: T.r.pill, background: text.trim() ? T.accent : T.glass, border: 'none', cursor: text.trim() ? 'pointer' : 'default', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke={text.trim() ? T.ink : T.faint} strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z" /></svg>
             </button>
           </div>
@@ -119,7 +119,7 @@ function CommentRow({ com, onOpenMember, onDelete }: { com: Comment; onOpenMembe
         <div style={{ ...inset, borderRadius: '4px 16px 16px 16px', padding: '9px 13px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 2 }}>
             <span style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 13, color: T.text }}>{com.name}{mine ? ' (You)' : ''}</span>
-            {com.tip && <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 10, color: T.amber, background: 'rgba(255,184,107,0.14)', padding: '2px 7px', borderRadius: 8 }}>💡 TIP</span>}
+            {com.tip && <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 10, color: T.amber, background: hexA(T.amber, 0.14), padding: '2px 7px', borderRadius: 8 }}>💡 TIP</span>}
           </div>
           <div style={{ fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 14, color: T.text, lineHeight: 1.4 }}>{com.text}</div>
         </div>
@@ -163,7 +163,7 @@ export function ComposeSheet({ open, initialType, circleId, onClose }: { open: b
             <button
               key={p.type}
               onClick={() => setType(p.type)}
-              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: type === p.type ? T.glassHi : T.glass, border: `2px solid ${type === p.type ? p.color : T.line}`, borderRadius: 16, padding: '11px 4px', cursor: 'pointer' }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: type === p.type ? hexA(p.color, 0.12) : T.glass, border: `2px solid ${type === p.type ? p.color : T.line}`, borderRadius: 16, padding: '11px 4px', cursor: 'pointer' }}
             >
               <span style={{ fontSize: 22 }}>{p.emoji}</span>
               <span style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 12, color: type === p.type ? p.color : T.text }}>{p.label}</span>
@@ -184,7 +184,7 @@ export function ComposeSheet({ open, initialType, circleId, onClose }: { open: b
           onClick={share}
           disabled={!text.trim()}
           className="pressable"
-          style={{ width: '100%', marginTop: 16, background: text.trim() ? T.accent : T.glassHi, color: text.trim() ? T.ink : T.faint, border: 'none', borderRadius: 18, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 18, cursor: text.trim() ? 'pointer' : 'default', ['--press-y' as string]: '3px' }}
+          style={{ width: '100%', marginTop: 16, background: text.trim() ? T.accent : T.glass, color: text.trim() ? T.ink : T.faint, border: 'none', borderRadius: T.r.pill, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 18, cursor: text.trim() ? 'pointer' : 'default', ['--press-y' as string]: '3px' }}
         >
           Share {def.label.toLowerCase()} · +20 XP
         </button>
@@ -236,7 +236,7 @@ export function CheckInSheet({ open, onClose }: { open: boolean; onClose: () => 
         <button
           onClick={submit}
           className="pressable"
-          style={{ width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: 18, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 18, cursor: 'pointer', ['--press-y' as string]: '3px' }}
+          style={{ width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 18, cursor: 'pointer', ['--press-y' as string]: '3px' }}
         >
           Check in for today
         </button>
@@ -266,7 +266,7 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
           <Avatar initial={m.initial} gradient={m.avatar} size={84} fontSize={34} />
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 10 }}>
             <span style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 700, fontSize: 22, color: T.text }}>{m.name}</span>
-            {isFriend && <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 11, color: T.green, background: 'rgba(91,227,154,0.14)', padding: '3px 9px', borderRadius: 10 }}>✓ Friends</span>}
+            {isFriend && <span style={{ fontFamily: 'Hanken Grotesk', fontWeight: 800, fontSize: 11, color: T.green, background: hexA(T.green, 0.14), padding: '3px 9px', borderRadius: 10 }}>✓ Friends</span>}
           </div>
           {m.bio && <div style={{ fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 14, color: T.dim, lineHeight: 1.45, marginTop: 4, maxWidth: 300 }}>{m.bio}</div>}
         </div>
@@ -284,16 +284,16 @@ export function MemberProfileSheet({ memberId, onClose }: { memberId: string | n
           <button
             onClick={() => { actions.cheerMember(m.name); onClose() }}
             className="pressable"
-            style={{ flex: 1, background: T.amber, color: T.ink, border: 'none', borderRadius: 16, padding: 14, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}
+            style={{ flex: 1, background: T.amber, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 14, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}
           >
             👏 Cheer on
           </button>
           {isFriend ? (
-            <button onClick={() => { actions.nudgeFriend(m.name); onClose() }} style={{ flex: 1, background: T.glassHi, color: T.text, border: `1px solid ${T.line}`, borderRadius: 16, padding: 14, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>
+            <button onClick={() => { actions.nudgeFriend(m.name); onClose() }} style={{ flex: 1, background: T.solid, color: T.text, border: `1px solid ${T.line}`, borderRadius: T.r.pill, padding: 14, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>
               👋 Nudge
             </button>
           ) : (
-            <button onClick={() => actions.addFriend(m.id)} className="pressable" style={{ flex: 1, background: T.accent, color: T.ink, border: 'none', borderRadius: 16, padding: 14, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>
+            <button onClick={() => actions.addFriend(m.id)} className="pressable" style={{ flex: 1, background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 14, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>
               + Add friend
             </button>
           )}
@@ -368,7 +368,7 @@ export function CircleSheet({
         </div>
 
         {goal.pct >= 1 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: 'rgba(255,184,107,0.12)', border: `1px solid ${T.amber}`, borderRadius: 16, padding: '12px 14px', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: hexA(T.amber, 0.12), border: `1px solid ${T.amber}`, borderRadius: 16, padding: '12px 14px', marginBottom: 16 }}>
             <span style={{ fontSize: 26 }}>{c.rewardEmoji}</span>
             <div>
               <div style={{ fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 15, color: T.text }}>Reward unlocked!</div>
@@ -379,7 +379,7 @@ export function CircleSheet({
 
         {/* your personal reward toward the circle */}
         {joined && (
-          <div style={{ background: goal.youEarned ? 'rgba(255,184,107,0.12)' : T.glass, border: `1px solid ${goal.youEarned ? T.amber : T.line}`, borderRadius: 16, padding: '13px 14px', marginBottom: 16 }}>
+          <div style={{ background: goal.youEarned ? hexA(T.amber, 0.12) : T.glass, border: `1px solid ${goal.youEarned ? T.amber : T.line}`, borderRadius: 16, padding: '13px 14px', marginBottom: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: goal.youEarned ? 0 : 8 }}>
               <span style={{ fontSize: 22 }}>{goal.youEarned ? c.rewardEmoji : '🎖️'}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
@@ -416,7 +416,7 @@ export function CircleSheet({
         <button
           onClick={() => { joined ? actions.leaveCircle(c.id) : actions.joinCircle(c.id); if (!joined) onClose() }}
           className="pressable"
-          style={{ width: '100%', background: joined ? T.glassHi : c.color, color: joined ? T.dim : T.ink, border: joined ? `1px solid ${T.line}` : 'none', borderRadius: 18, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 17, cursor: 'pointer', ['--press-y' as string]: '3px' }}
+          style={{ width: '100%', background: joined ? T.solid : c.color, color: joined ? T.dim : T.ink, border: joined ? `1px solid ${T.line}` : 'none', borderRadius: T.r.pill, padding: 16, fontFamily: 'Bricolage Grotesque', fontWeight: 600, fontSize: 17, cursor: 'pointer', ['--press-y' as string]: '3px' }}
         >
           {joined ? 'Leave circle' : `Join ${c.name} · +15 XP`}
         </button>

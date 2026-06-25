@@ -23,7 +23,7 @@ export function Sheet({
         position: 'absolute',
         inset: 0,
         zIndex: 85,
-        background: 'rgba(7,8,12,.62)',
+        background: 'rgba(20,15,8,0.4)',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'flex-end',
@@ -40,7 +40,7 @@ export function Sheet({
           overflowY: 'auto',
           animation: 'pep-sheet .28s cubic-bezier(.2,.9,.3,1)',
           paddingBottom: 'env(safe-area-inset-bottom, 24px)',
-          boxShadow: '0 -12px 40px rgba(0,0,0,.5)',
+          boxShadow: '0 -16px 40px rgba(48,38,22,0.16)',
           borderTop: `1px solid ${T.line}`,
         }}
       >
@@ -52,7 +52,7 @@ export function Sheet({
               <button
                 onClick={onClose}
                 aria-label="Close"
-                style={{ width: 34, height: 34, borderRadius: '50%', background: T.glassHi, border: `1px solid ${T.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                style={{ width: 34, height: 34, borderRadius: '50%', background: T.glass, border: `1px solid ${T.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.dim} strokeWidth="2.6" strokeLinecap="round">
                   <path d="M6 6l12 12M18 6L6 18" />

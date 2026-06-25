@@ -1,7 +1,7 @@
 export function ProgressBar({
   pct,
   fill,
-  track = 'rgba(255,255,255,0.08)',
+  track = 'rgba(40,33,22,0.08)',
   height = 11,
 }: {
   pct: number

@@ -1,50 +1,52 @@
-// Fettle "Midnight Glass" design system. One source of truth for the dark,
-// premium, glass aesthetic. Components reference these tokens instead of
-// hardcoding values, so the look stays cohesive and is tunable in one place.
+// Fettle "Daylight" design system. A warm, soft, playful-modern LIGHT
+// aesthetic inspired by Family (family.co): a warm paper canvas, soft
+// physical depth (diffuse shadows, no harsh borders), generously rounded
+// squircle shapes, a friendly colourful spectrum, and a fresh green
+// primary. Components reference these tokens instead of hardcoding values,
+// so the look stays cohesive and is tunable in one place.
 import type { CSSProperties } from 'react'
 
 export const T = {
-  // surfaces
-  bg: '#0B0D13',
-  bgElev: '#10131B',
-  glass: 'rgba(255,255,255,0.045)',
-  glassHi: 'rgba(255,255,255,0.07)',
-  solid: '#151823',
-  line: 'rgba(255,255,255,0.09)',
-  lineSoft: 'rgba(255,255,255,0.06)',
+  // surfaces — warm paper, soft physical depth
+  bg: '#F1EDE4', // warm canvas
+  bgElev: '#F8F5EE',
+  glass: '#FBF9F3', // soft tinted inset fill (chips, rows, tiles)
+  glassHi: '#FFFFFF', // elevated inset
+  solid: '#FFFFFF', // sheets / solid cards
+  line: 'rgba(40,33,22,0.08)',
+  lineSoft: 'rgba(40,33,22,0.05)',
 
-  // text
-  text: '#EAECF3',
-  dim: '#9498A8',
-  faint: '#5E6373',
-  ink: '#0B0D13', // text on bright surfaces
+  // text — warm ink
+  text: '#231E16',
+  dim: '#736D60',
+  faint: '#ABA493',
+  ink: '#FFFFFF', // readable text on saturated / accent fills
 
-  // accent + refined data hues
-  accent: '#C6F24E', // electric citron
-  accentDim: 'rgba(198,242,78,0.14)',
-  blue: '#6FA8FF',
-  amber: '#FFB86B',
-  green: '#5BE39A',
-  rose: '#FF7A93',
-  violet: '#9F8BFF',
+  // primary + a playful, colourful spectrum
+  accent: '#FF6F57', // warm, friendly coral (primary)
+  accentDim: 'rgba(255,111,87,0.15)',
+  blue: '#4F9DF7',
+  amber: '#FF9F43',
+  green: '#2FC36B',
+  rose: '#FF6F8B',
+  violet: '#8C7CF5',
 
   // type
   display: "'Bricolage Grotesque', system-ui, sans-serif",
   body: "'Hanken Grotesk', system-ui, sans-serif",
 
-  // radii
-  r: { sm: 12, md: 16, lg: 20, xl: 26, pill: 999 },
+  // radii — soft squircles
+  r: { sm: 14, md: 18, lg: 22, xl: 28, pill: 999 },
 } as const
 
-/** A frosted glass surface over the dark background (static, no live blur). */
+/** A solid card with soft, diffuse, warm physical depth (no harsh border). */
 export const card: CSSProperties = {
-  background: T.glass,
-  border: `1px solid ${T.line}`,
+  background: T.solid,
   borderRadius: T.r.xl,
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,.06), 0 18px 40px rgba(0,0,0,.45)',
+  boxShadow: '0 1px 2px rgba(48,38,22,0.04), 0 10px 26px rgba(48,38,22,0.07)',
 }
 
-/** A flatter inset surface (rows, chips, inputs). */
+/** A flatter inset surface (rows, chips, inputs, icon tiles). */
 export const inset: CSSProperties = {
   background: T.glass,
   border: `1px solid ${T.lineSoft}`,
@@ -56,29 +58,40 @@ export const eyebrow: CSSProperties = {
   fontFamily: T.body,
   fontWeight: 700,
   fontSize: 11,
-  letterSpacing: '1.4px',
+  letterSpacing: '1.2px',
   textTransform: 'uppercase',
   color: T.faint,
 }
 
-/** Primary citron button face. */
+/** Primary green button face, fully rounded. */
 export const accentBtn: CSSProperties = {
   background: T.accent,
   color: T.ink,
   border: 'none',
-  borderRadius: T.r.md,
+  borderRadius: T.r.pill,
   fontFamily: T.display,
   fontWeight: 600,
   cursor: 'pointer',
 }
 
-/** Subtle ghost button on glass. */
+/** Subtle ghost button on the warm canvas. */
 export const ghostBtn: CSSProperties = {
-  background: T.glassHi,
+  background: T.solid,
   color: T.text,
   border: `1px solid ${T.line}`,
-  borderRadius: T.r.md,
+  borderRadius: T.r.pill,
   fontFamily: T.body,
   fontWeight: 700,
   cursor: 'pointer',
+}
+
+/** A soft tint helper for colourful squircle icon tiles. Pass a spectrum hue. */
+export function softTile(hex: string): CSSProperties {
+  return { background: hexA(hex, 0.14), borderRadius: T.r.md }
+}
+
+/** Hex + alpha -> rgba string (hex must be #RRGGBB). */
+export function hexA(hex: string, a: number): string {
+  const n = parseInt(hex.slice(1), 16)
+  return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`
 }

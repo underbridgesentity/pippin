@@ -4,7 +4,7 @@ import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
 import { num } from '../lib/format'
-import { T, card, inset, eyebrow } from '../lib/theme'
+import { T, card, inset, eyebrow, softTile } from '../lib/theme'
 import type { WeightEntry } from '../lib/types'
 
 export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings: () => void; onShareWin: () => void; onSnap: () => void }) {
@@ -48,7 +48,7 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -10 }}>
           <div style={{ position: 'relative', width: 128, height: 128, marginBottom: 10 }}>
             <svg width="128" height="128" viewBox="0 0 128 128" style={{ position: 'absolute', inset: 0 }}>
-              <circle cx="64" cy="64" r="58" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="7" />
+              <circle cx="64" cy="64" r="58" fill="none" stroke="rgba(40,33,22,0.08)" strokeWidth="7" />
               <circle cx="64" cy="64" r="58" fill="none" stroke={T.accent} strokeWidth="7" strokeLinecap="round" strokeDasharray={2 * Math.PI * 58} strokeDashoffset={2 * Math.PI * 58 * (1 - d.xpPct)} transform="rotate(-90 64 64)" style={{ transition: 'stroke-dashoffset .5s ease' }} />
             </svg>
             <div style={{ position: 'absolute', inset: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -66,7 +66,7 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
       {/* stats row */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
         {stats.map((s) => (
-          <div key={s.label} style={{ ...inset, flex: 1, borderRadius: 18, padding: '13px 6px', textAlign: 'center' }}>
+          <div key={s.label} style={{ ...inset, ...softTile(s.color), flex: 1, borderRadius: 18, padding: '13px 6px', textAlign: 'center' }}>
             <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 22, color: s.color }}>{s.value}</div>
             <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.dim }}>{s.label}</div>
           </div>
@@ -78,12 +78,12 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
 
       {/* community impact, celebrating generosity, not just personal metrics */}
       <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
-        <div style={{ ...inset, flex: 1, borderRadius: 18, padding: '14px 16px' }}>
+        <div style={{ ...inset, ...softTile(T.amber), flex: 1, borderRadius: 18, padding: '14px 16px' }}>
           <div style={{ fontSize: 20, marginBottom: 2 }}>👏</div>
           <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.amber }}>{num(d.kudosGiven)}</div>
           <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.dim }}>Cheers given</div>
         </div>
-        <div style={{ ...inset, flex: 1, borderRadius: 18, padding: '14px 16px' }}>
+        <div style={{ ...inset, ...softTile(T.rose), flex: 1, borderRadius: 18, padding: '14px 16px' }}>
           <div style={{ fontSize: 20, marginBottom: 2 }}>💛</div>
           <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 22, color: T.rose }}>{num(d.kudosReceived)}</div>
           <div style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.dim }}>Cheers received</div>
@@ -94,7 +94,7 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
       <div style={{ ...card, position: 'relative', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden' }}>
         <Confetti count={24} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 60, height: 60, borderRadius: '50%', background: T.accentDim, display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', border: `2.5px solid ${T.line}` }}>
+          <div style={{ width: 60, height: 60, borderRadius: '50%', ...softTile(T.accent), display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none', border: `1px solid ${T.lineSoft}` }}>
             <svg width="34" height="34" viewBox="0 0 24 24" fill={T.accent}><path d="M12 2l2.9 6.3 6.9.7-5.2 4.6 1.5 6.8L12 17.8 5.9 20.4l1.5-6.8L2.2 9l6.9-.7L12 2Z" /></svg>
           </div>
           <div style={{ flex: 1 }}>
@@ -102,7 +102,7 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
             <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text, lineHeight: 1.15 }}>{proud.text}</div>
           </div>
         </div>
-        <button onClick={cta.action} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: 15, padding: 12, fontFamily: T.display, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
+        <button onClick={cta.action} className="pressable" style={{ position: 'relative', marginTop: 14, width: '100%', background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 12, fontFamily: T.display, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}>
           {cta.label}
         </button>
       </div>

@@ -4,8 +4,8 @@ export function Ring({
   size = 120,
   stroke = 14,
   pct,
-  color = '#5BE39A',
-  track = 'rgba(255,255,255,0.08)',
+  color = '#FF6F57',
+  track = 'rgba(40,33,22,0.08)',
   children,
 }: {
   size?: number
