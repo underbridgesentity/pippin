@@ -1,7 +1,7 @@
 // The data-access contract. Both the local-storage adapter and the Supabase
 // adapter implement FettleApi, so the rest of the app is backend-agnostic.
 
-import type { Account, Goal, Settings, UserState } from '../types'
+import type { Account, FeedEntry, Goal, Settings, UserState } from '../types'
 import type { SeedMember } from '../seed'
 
 export type SocialProvider = 'google' | 'apple'
@@ -119,7 +119,7 @@ export function normalize(s: UserState): UserState {
     reactions: s.reactions ?? {},
     comments: s.comments ?? {},
     kudosReceived: s.kudosReceived ?? 0,
-    feed: s.feed ?? [],
+    feed: (s.feed ?? []).map(migrateFeedBrand),
     badges: s.badges ?? {},
     friends: s.friends ?? [],
     circles: s.circles ?? [],
@@ -129,6 +129,16 @@ export function normalize(s: UserState): UserState {
     sleep: s.sleep ?? {},
     moods: s.moods ?? {},
   }
+}
+
+// One-time migration: accounts created before the Fettle -> Pippin rename have
+// the old brand baked into stored feed text (e.g. "joined Fettle and earned
+// First Steps"). Rewrite it on load so the feed reflects the current name.
+function migrateFeedBrand(e: FeedEntry): FeedEntry {
+  const action = e.action.replace(/Fettle/g, 'Pippin')
+  const text = e.text?.replace(/Fettle/g, 'Pippin')
+  if (action === e.action && text === e.text) return e
+  return { ...e, action, text }
 }
 
 /** A loaded blob is only a real UserState if it carries the core fields. */
