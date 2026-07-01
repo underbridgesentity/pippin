@@ -3,6 +3,7 @@ import { Ring } from '../components/Ring'
 import { ProgressBar } from '../components/ProgressBar'
 import { Avatar } from '../components/Avatar'
 import { Mascot } from '../components/Mascot'
+import { StoryComposer } from '../components/StoryComposer'
 import { useStore, actions } from '../lib/store'
 import { useDerived, useFeed } from '../lib/hooks'
 import { REACTION_BY_KIND } from '../lib/social'
@@ -54,6 +55,7 @@ export function Home({
   const d = useDerived()
   const feed = useFeed()
   const [filter, setFilter] = useState<Filter>('all')
+  const [storyMeal, setStoryMeal] = useState<MealEntry | null>(null)
   const now = d?.now ?? Date.now()
 
   if (!account || !data || !d) return null
@@ -83,6 +85,7 @@ export function Home({
     .slice(0, 16)
 
   return (
+    <>
     <div data-screen-label="Home" style={{ padding: '56px 18px 116px' }}>
       {/* header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 18 }}>
@@ -189,7 +192,7 @@ export function Home({
       ) : (
         <div style={{ ...card, padding: 6, marginBottom: 18 }}>
           {d.todayMeals.map((m) => (
-            <MealRow key={m.id} meal={m} now={now} onDelete={() => actions.deleteMeal(m.id)} />
+            <MealRow key={m.id} meal={m} now={now} onShare={() => setStoryMeal(m)} onDelete={() => actions.deleteMeal(m.id)} />
           ))}
         </div>
       )}
@@ -222,6 +225,8 @@ export function Home({
         shown.map((p) => <FeedCard key={p.id} post={p} now={now} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />)
       )}
     </div>
+    <StoryComposer meal={storyMeal} name={account.name} onClose={() => setStoryMeal(null)} />
+    </>
   )
 }
 
@@ -361,7 +366,7 @@ function Stat({ stroke, value, label, icon }: { stroke: string; value: string; l
   )
 }
 
-function MealRow({ meal, now, onDelete }: { meal: MealEntry; now: number; onDelete: () => void }) {
+function MealRow({ meal, now, onShare, onDelete }: { meal: MealEntry; now: number; onShare: () => void; onDelete: () => void }) {
   const emoji = meal.items[0] ? meal.items[0].emoji : '🍽️'
   const title = meal.items.length === 1 ? meal.items[0].name : `${meal.items[0]?.name ?? 'Meal'} +${meal.items.length - 1}`
   return (
@@ -376,6 +381,9 @@ function MealRow({ meal, now, onDelete }: { meal: MealEntry; now: number; onDele
         <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim, textTransform: 'capitalize' }}>{meal.type} · {relativeTime(meal.at, now)}</div>
       </div>
       <span style={{ fontFamily: T.display, fontWeight: 600, fontSize: 15, color: T.text, flex: 'none' }}>{num(meal.kcal)}</span>
+      <button onClick={onShare} aria-label="Share to story" style={{ width: 28, height: 28, borderRadius: 9, ...inset, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15V3M8 7l4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+      </button>
       <button onClick={onDelete} aria-label="Delete meal" style={{ width: 28, height: 28, borderRadius: 9, ...inset, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={T.faint} strokeWidth="2.4" strokeLinecap="round"><path d="M5 7h14M10 7V5h4v2M8 7l1 12h6l1-12" /></svg>
       </button>
