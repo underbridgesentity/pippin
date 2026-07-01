@@ -125,4 +125,10 @@ export const localApi: FettleApi = {
   async respondToRequest() {},
   async removeFriend() {},
   async listFriendships() { return { friends: [], incoming: [], outgoing: [] } },
+
+  // The shared community feed is Supabase-only; local mode uses the seeded feed.
+  realFeed: false,
+  async listCommunity() { return [] },
+  async createPost() { return null },
+  async deletePostRemote() {},
 }

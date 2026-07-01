@@ -6,9 +6,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { gradientFor, initialOf } from '../format'
 import { computeWeeklyXp } from '../selectors'
 import { storage } from '../storage'
-import type { Account, Goal, UserState } from '../types'
+import type { Account, Goal, PostType, UserState } from '../types'
 import type { SeedMember } from '../seed'
-import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type FettleApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
+import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type CommunityPost, type FettleApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
 
 // Only offer social buttons for providers actually enabled in Supabase, set via
 // VITE_AUTH_PROVIDERS (e.g. "google" or "google,apple"). Empty = email only.
@@ -58,10 +58,24 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
     return data.session?.user.id ?? null
   }
 
+  // Upload a data-URL photo to the public post-photos bucket, return its URL.
+  async function uploadPhoto(userId: string, dataUrl: string): Promise<string | null> {
+    try {
+      const blob = await (await fetch(dataUrl)).blob()
+      const path = `${userId}/${Date.now()}_${Math.round(Math.random() * 1e6)}.jpg`
+      const { error } = await sb.storage.from('post-photos').upload(path, blob, { contentType: blob.type || 'image/jpeg' })
+      if (error) return null
+      return sb.storage.from('post-photos').getPublicUrl(path).data.publicUrl
+    } catch {
+      return null
+    }
+  }
+
   return {
     mode: 'supabase',
     socialProviders: enabledProviders(),
     realFriends: true,
+    realFeed: true,
 
     async getSession() {
       return currentAccount()
@@ -248,5 +262,44 @@ export function createSupabaseApi(url: string, anonKey: string): FettleApi {
       const pick = (ids: string[]) => ids.map((i) => byId.get(i)).filter((x): x is FriendProfile => !!x)
       return { friends: pick(friendIds), incoming: pick(incomingIds), outgoing: pick(outgoingIds) }
     },
+
+    // ── community feed ──────────────────────────────────────────────────────
+    async listCommunity(limit = 40): Promise<CommunityPost[]> {
+      const { data, error } = await sb
+        .from('posts')
+        .select('id, author, post_type, text, photo_url, created_at, profiles(name, avatar)')
+        .order('created_at', { ascending: false })
+        .limit(limit)
+      if (error || !data) return []
+      return (data as unknown as PostRow[]).map((r) => ({
+        id: r.id,
+        authorId: r.author,
+        authorName: r.profiles?.name || 'Someone',
+        authorAvatar: r.profiles?.avatar || gradientFor(r.author),
+        postType: r.post_type,
+        text: r.text,
+        photoUrl: r.photo_url,
+        createdAt: Date.parse(r.created_at),
+      }))
+    },
+
+    async createPost(input): Promise<CommunityPost | null> {
+      const acc = await currentAccount()
+      if (!acc) return null
+      const photoUrl = input.photoDataUrl ? await uploadPhoto(acc.id, input.photoDataUrl) : null
+      const { data, error } = await sb
+        .from('posts')
+        .insert({ author: acc.id, post_type: input.postType, text: input.text.trim() || null, photo_url: photoUrl })
+        .select('id, created_at')
+        .single()
+      if (error || !data) return null
+      return { id: data.id, authorId: acc.id, authorName: acc.name, authorAvatar: acc.avatar, postType: input.postType, text: input.text.trim() || null, photoUrl, createdAt: Date.parse(data.created_at) }
+    },
+
+    async deletePostRemote(id) {
+      await sb.from('posts').delete().eq('id', id)
+    },
   }
 }
+
+type PostRow = { id: string; author: string; post_type: PostType | null; text: string | null; photo_url: string | null; created_at: string; profiles: { name: string | null; avatar: string | null } | null }

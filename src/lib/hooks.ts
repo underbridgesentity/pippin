@@ -11,8 +11,8 @@ export function useDerived(): Derived | null {
   )
 }
 
-/** The merged, decorated community feed (own events + ambient community). */
+/** The merged, decorated community feed (real posts + own events + ambient). */
 export function useFeed(): DecoratedFeed[] {
-  const { data } = useStore()
-  return useMemo(() => (data ? buildFeed(data, Date.now()) : []), [data])
+  const { data, communityPosts } = useStore()
+  return useMemo(() => (data ? buildFeed(data, communityPosts ?? [], Date.now()) : []), [data, communityPosts])
 }

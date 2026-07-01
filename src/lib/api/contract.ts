@@ -1,7 +1,7 @@
 // The data-access contract. Both the local-storage adapter and the Supabase
 // adapter implement FettleApi, so the rest of the app is backend-agnostic.
 
-import type { Account, FeedEntry, Goal, Settings, UserState } from '../types'
+import type { Account, FeedEntry, Goal, PostType, Settings, UserState } from '../types'
 import type { SeedMember } from '../seed'
 
 export type SocialProvider = 'google' | 'apple'
@@ -9,6 +9,18 @@ export type SocialProvider = 'google' | 'apple'
 /** A real (Supabase) user, for friend search / requests / friends list. */
 export type FriendProfile = { id: string; name: string; username: string | null; avatar: string }
 export type Friendships = { friends: FriendProfile[]; incoming: FriendProfile[]; outgoing: FriendProfile[] }
+
+/** A real post from the shared community feed (Supabase). */
+export type CommunityPost = {
+  id: string
+  authorId: string
+  authorName: string
+  authorAvatar: string
+  postType: PostType | null
+  text: string | null
+  photoUrl: string | null
+  createdAt: number
+}
 
 /** Onboarding goal stashed before an OAuth redirect, applied on return. */
 export const PENDING_GOAL_KEY = 'pendingGoal'
@@ -41,6 +53,13 @@ export interface FettleApi {
   respondToRequest(requesterId: string, accept: boolean): Promise<void>
   removeFriend(userId: string): Promise<void>
   listFriendships(): Promise<Friendships>
+
+  // ── real multi-user community feed (only meaningful when realFeed is true) ───
+  /** true when this backend has a shared, cross-user posts feed (Supabase) */
+  readonly realFeed: boolean
+  listCommunity(limit?: number): Promise<CommunityPost[]>
+  createPost(input: { postType: PostType; text: string; photoDataUrl?: string }): Promise<CommunityPost | null>
+  deletePostRemote(id: string): Promise<void>
 }
 
 export class ApiError extends Error {

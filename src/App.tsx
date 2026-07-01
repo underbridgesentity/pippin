@@ -35,7 +35,7 @@ export function App() {
 }
 
 function Root() {
-  const { status, account, data, toast, celebration } = useStore()
+  const { status, account, data, toast, celebration, communityPosts } = useStore()
   const [tab, setTab] = useState<Tab>('home')
   const [capture, setCapture] = useState(false)
   const [activity, setActivity] = useState(false)
@@ -86,7 +86,7 @@ function Root() {
   if (!account || !data) return <Auth />
   if (!data.welcomed) return <Welcome name={firstName(account.name)} />
 
-  const openPost = postId && data ? findDecoratedPost(data, postId) : null
+  const openPost = postId && data ? findDecoratedPost(data, postId, communityPosts ?? []) : null
 
   return (
     <>

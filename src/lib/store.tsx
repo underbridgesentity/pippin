@@ -4,7 +4,7 @@
 // effects (XP, level-ups, badge unlocks, feed entries, toasts).
 
 import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react'
-import { api, defaultState, normalize, PENDING_GOAL_KEY, type ApiError, type SocialProvider } from './api'
+import { api, defaultState, normalize, PENDING_GOAL_KEY, type ApiError, type CommunityPost, type SocialProvider } from './api'
 import { storage } from './storage'
 import { BADGES, XP, computeStreak, earnedBadges, estimateBurn, levelFromXp, stageForLevel, stepsToKm } from './gamification'
 import { CIRCLE_BADGE_BY_ID, earnedCircleBadges } from './selectors'
@@ -48,6 +48,8 @@ type StoreState = {
   community: SeedMember[] | null
   toast: { msg: string; key: number } | null
   celebration: Celebration | null
+  /** real cross-user posts (Supabase); undefined/empty falls back to the seeded feed */
+  communityPosts?: FeedEntry[]
 }
 
 let current: StoreState = { status: 'loading', account: null, data: null, community: null, toast: null, celebration: null }
@@ -93,7 +95,7 @@ async function init() {
       }
       current = { status: 'ready', account, data, community: null, toast: null, celebration: null }
       emit()
-      refreshCommunity(account.id)
+      refreshCommunity(account.id); refreshFeed()
       return
     }
   } catch {
@@ -108,6 +110,40 @@ function refreshCommunity(excludeId: string) {
     .getLeaderboard(excludeId)
     .then((members) => {
       current = { ...current, community: members }
+      emit()
+    })
+    .catch(() => {})
+}
+
+// Map a real community post to the FeedEntry shape the feed already renders.
+function postToFeedEntry(p: CommunityPost, myId: string, myName: string): FeedEntry {
+  const mine = p.authorId === myId
+  return {
+    id: p.id,
+    at: p.createdAt,
+    kind: 'post',
+    author: mine ? 'me' : p.authorId,
+    name: mine ? `${myName.split(' ')[0]} (You)` : p.authorName,
+    initial: (p.authorName[0] || '?').toUpperCase(),
+    avatar: p.authorAvatar,
+    action: POST_ACTION[p.postType ?? 'update'],
+    text: p.text ?? '',
+    photo: p.photoUrl,
+    postType: p.postType ?? 'update',
+    baseCheers: 0,
+  }
+}
+
+// Pull the shared community feed (Supabase only). Graceful: on any error the
+// feed just stays on the local + seeded content.
+function refreshFeed() {
+  if (!api.realFeed) return
+  const acc = current.account
+  if (!acc) return
+  api
+    .listCommunity()
+    .then((posts) => {
+      current = { ...current, communityPosts: posts.map((p) => postToFeedEntry(p, acc.id, acc.name)) }
       emit()
     })
     .catch(() => {})
@@ -274,7 +310,7 @@ export const actions = {
     void api.saveState(account.id, data)
     current = { ...current, account, data, community: null }
     emit()
-    refreshCommunity(account.id)
+    refreshCommunity(account.id); refreshFeed()
   },
 
   finishWelcome() {
@@ -293,7 +329,7 @@ export const actions = {
     const data = loaded ? normalize(loaded) : defaultState('eat', Date.now())
     current = { ...current, account, data, community: null }
     emit()
-    refreshCommunity(account.id)
+    refreshCommunity(account.id); refreshFeed()
   },
 
   async socialAuth(provider: SocialProvider, goal: Goal) {
@@ -306,7 +342,7 @@ export const actions = {
     void api.saveState(account.id, data)
     current = { ...current, account, data, community: null }
     emit()
-    refreshCommunity(account.id)
+    refreshCommunity(account.id); refreshFeed()
   },
 
   logOut() {
@@ -449,9 +485,28 @@ export const actions = {
     commit({ ...data, comments: { ...data.comments, [feedId]: list.filter((c) => c.id !== commentId) } }, { toast: 'Comment deleted' })
   },
 
-  post(input: { type: PostType; text: string; circleId?: string }) {
+  post(input: { type: PostType; text: string; circleId?: string; photoDataUrl?: string }) {
     const { data, account } = current
-    if (!data || !account || !input.text.trim()) return
+    if (!data || !account || (!input.text.trim() && !input.photoDataUrl)) return
+
+    // Global (non-circle) posts go to the shared community feed when the backend
+    // supports it. Circle posts stay local for now.
+    if (api.realFeed && !input.circleId) {
+      void (async () => {
+        const created = await api.createPost({ postType: input.type, text: input.text, photoDataUrl: input.photoDataUrl }).catch(() => null)
+        if (created) {
+          current = { ...current, communityPosts: [postToFeedEntry(created, account.id, account.name), ...(current.communityPosts ?? [])] }
+          emit()
+          commit({ ...data, xp: data.xp + 20 }, { toast: 'Shared with your squad ✨' })
+        } else {
+          // Server unavailable → keep it locally so composing never breaks.
+          const local = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim() })
+          commit({ ...data, feed: [local, ...data.feed], xp: data.xp + 20 }, { toast: 'Shared with your squad ✨' })
+        }
+      })()
+      return
+    }
+
     const entry = makeMyFeed(account, 'post', POST_ACTION[input.type], { postType: input.type, text: input.text.trim(), circleId: input.circleId })
     commit({ ...data, feed: [entry, ...data.feed], xp: data.xp + 20 }, { toast: input.circleId ? 'Posted to your circle ✨' : 'Shared with your squad ✨' })
     scheduleSupport(entry.id)
@@ -461,6 +516,15 @@ export const actions = {
   deletePost(feedId: string) {
     const { data } = current
     if (!data) return
+    // A real community post of mine lives in communityPosts, not local feed.
+    const cp = (current.communityPosts ?? []).find((e) => e.id === feedId)
+    if (cp && cp.author === 'me') {
+      current = { ...current, communityPosts: (current.communityPosts ?? []).filter((e) => e.id !== feedId) }
+      emit()
+      if (api.realFeed) void api.deletePostRemote(feedId).catch(() => {})
+      setToast('Post deleted')
+      return
+    }
     const entry = data.feed.find((e) => e.id === feedId)
     if (!entry || entry.author !== 'me') return
     const comments = { ...data.comments }; delete comments[feedId]

@@ -41,9 +41,14 @@ export function decorateEntry(entry: FeedEntry, s: UserState): DecoratedFeed {
   return { ...entry, reactionCounts: counts, totalReactions, myReaction, comments, commentCount: comments.length }
 }
 
-/** The merged, decorated global feed: the user's own (non-circle) events + ambient community. */
-export function buildFeed(s: UserState, now = Date.now()): DecoratedFeed[] {
-  const merged = [...s.feed.filter((e) => !e.circleId), ...communityFeed(now)].sort((a, b) => b.at - a.at)
+/** The merged, decorated global feed: real cross-user posts (when present) +
+ * the user's own non-circle events + ambient community. When real posts exist,
+ * local 'post' entries are hidden (the server is the source of truth for those);
+ * the user's auto-events (meals, activities, levels) still show. */
+export function buildFeed(s: UserState, communityPosts: FeedEntry[] = [], now = Date.now()): DecoratedFeed[] {
+  const hasReal = communityPosts.length > 0
+  const local = s.feed.filter((e) => !e.circleId && (!hasReal || e.kind !== 'post'))
+  const merged = [...communityPosts, ...local, ...communityFeed(now)].sort((a, b) => b.at - a.at)
   return merged.map((e) => decorateEntry(e, s))
 }
 
@@ -55,8 +60,8 @@ export function buildCircleFeed(s: UserState, circleId: string, now = Date.now()
 }
 
 /** Resolve any post by id across the global feed, community and every circle. */
-export function findDecoratedPost(s: UserState, id: string, now = Date.now()): DecoratedFeed | null {
-  let entry = s.feed.find((e) => e.id === id) ?? communityFeed(now).find((e) => e.id === id)
+export function findDecoratedPost(s: UserState, id: string, communityPosts: FeedEntry[] = [], now = Date.now()): DecoratedFeed | null {
+  let entry = communityPosts.find((e) => e.id === id) ?? s.feed.find((e) => e.id === id) ?? communityFeed(now).find((e) => e.id === id)
   if (!entry) {
     for (const c of CIRCLES) {
       const f = circleFeed(c.id, now).find((e) => e.id === id)

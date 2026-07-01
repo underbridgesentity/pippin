@@ -129,3 +129,50 @@ drop policy if exists "manage own membership" on public.circle_members;
 create policy "manage own membership"
   on public.circle_members for all to authenticated
   using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- ── community posts (real cross-user feed) ──────────────────────────────────
+-- author references profiles(id) so the feed query can embed the author's
+-- name + avatar in one request.
+create table if not exists public.posts (
+  id uuid primary key default gen_random_uuid(),
+  author uuid not null references public.profiles(id) on delete cascade,
+  post_type text,
+  text text,
+  photo_url text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.posts enable row level security;
+
+drop policy if exists "posts readable by authenticated" on public.posts;
+create policy "posts readable by authenticated"
+  on public.posts for select to authenticated using (true);
+
+drop policy if exists "create own posts" on public.posts;
+create policy "create own posts"
+  on public.posts for insert to authenticated with check (auth.uid() = author);
+
+drop policy if exists "delete own posts" on public.posts;
+create policy "delete own posts"
+  on public.posts for delete to authenticated using (auth.uid() = author);
+
+create index if not exists posts_created_idx on public.posts (created_at desc);
+
+-- ── post photos (public storage bucket) ─────────────────────────────────────
+insert into storage.buckets (id, name, public)
+values ('post-photos', 'post-photos', true)
+on conflict (id) do nothing;
+
+drop policy if exists "post photos readable" on storage.objects;
+create policy "post photos readable"
+  on storage.objects for select to public using (bucket_id = 'post-photos');
+
+drop policy if exists "upload own post photos" on storage.objects;
+create policy "upload own post photos"
+  on storage.objects for insert to authenticated
+  with check (bucket_id = 'post-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+
+drop policy if exists "delete own post photos" on storage.objects;
+create policy "delete own post photos"
+  on storage.objects for delete to authenticated
+  using (bucket_id = 'post-photos' and (storage.foldername(name))[1] = auth.uid()::text);
