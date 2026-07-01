@@ -1,13 +1,16 @@
-// Preview-and-confirm flow for sharing a meal as a story. The card is rendered
-// on a canvas (see lib/storyCard) and the user chooses exactly what appears on
-// it before saving or sharing, so nothing lands on a screenshot-able image
-// without their sign-off.
+// Preview-and-confirm flow for sharing to a story. Works for a meal card or a
+// milestone card. The card renders on a canvas (see lib/storyCard) and the user
+// chooses exactly what appears on it before saving or sharing, so nothing lands
+// on a screenshot-able image without their sign-off.
 import { useEffect, useRef, useState } from 'react'
-import { renderMealStory } from '../lib/storyCard'
+import { renderMealStory, renderMilestoneStory } from '../lib/storyCard'
 import { T } from '../lib/theme'
 import type { MealEntry } from '../lib/types'
+import type { Celebration } from '../lib/store'
 
-export function StoryComposer({ meal, name, onClose }: { meal: MealEntry | null; name: string; onClose: () => void }) {
+export type StoryInput = { type: 'meal'; meal: MealEntry } | { type: 'milestone'; celebration: Celebration }
+
+export function StoryComposer({ story, name, onClose }: { story: StoryInput | null; name: string; onClose: () => void }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [showMacros, setShowMacros] = useState(true)
   const [showName, setShowName] = useState(true)
@@ -15,16 +18,18 @@ export function StoryComposer({ meal, name, onClose }: { meal: MealEntry | null;
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
-    if (!meal || !canvasRef.current) return
+    if (!story || !canvasRef.current) return
     let stale = false
     setRendering(true)
-    renderMealStory(canvasRef.current, { meal, name, showMacros, showName })
-      .catch(() => {})
-      .finally(() => { if (!stale) setRendering(false) })
+    const done = () => { if (!stale) setRendering(false) }
+    const p = story.type === 'meal'
+      ? renderMealStory(canvasRef.current, { meal: story.meal, name, showMacros, showName })
+      : renderMilestoneStory(canvasRef.current, { celebration: story.celebration, name, showName })
+    p.catch(() => {}).finally(done)
     return () => { stale = true }
-  }, [meal, name, showMacros, showName])
+  }, [story, name, showMacros, showName])
 
-  if (!meal) return null
+  if (!story) return null
 
   function toBlob(): Promise<Blob | null> {
     return new Promise((resolve) => canvasRef.current?.toBlob((b) => resolve(b), 'image/png') ?? resolve(null))
@@ -61,7 +66,7 @@ export function StoryComposer({ meal, name, onClose }: { meal: MealEntry | null;
   }
 
   return (
-    <div style={{ position: 'absolute', inset: 0, zIndex: 97, background: 'rgba(20,15,8,0.62)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '54px 22px 26px', animation: 'pep-fade .2s ease' }}>
+    <div style={{ position: 'absolute', inset: 0, zIndex: 98, background: 'rgba(20,15,8,0.62)', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '54px 22px 26px', animation: 'pep-fade .2s ease' }}>
       <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
         <button onClick={onClose} aria-label="Close" style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.16)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
@@ -70,7 +75,6 @@ export function StoryComposer({ meal, name, onClose }: { meal: MealEntry | null;
         <div style={{ width: 40 }} />
       </div>
 
-      {/* preview */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 0, width: '100%' }}>
         <div style={{ position: 'relative', borderRadius: 22, overflow: 'hidden', boxShadow: '0 20px 50px rgba(0,0,0,0.4)' }}>
           <canvas ref={canvasRef} style={{ display: 'block', height: '52vh', width: 'auto', maxWidth: '100%' }} />
@@ -78,16 +82,14 @@ export function StoryComposer({ meal, name, onClose }: { meal: MealEntry | null;
         </div>
       </div>
 
-      {/* toggles */}
       <div style={{ display: 'flex', gap: 8, margin: '14px 0 4px' }}>
-        <Toggle on={showMacros} onClick={() => setShowMacros((v) => !v)} label="Macros" />
+        {story.type === 'meal' && <Toggle on={showMacros} onClick={() => setShowMacros((v) => !v)} label="Macros" />}
         <Toggle on={showName} onClick={() => setShowName((v) => !v)} label="My name" />
       </div>
       <div style={{ fontFamily: T.body, fontWeight: 600, fontSize: 12, color: 'rgba(255,255,255,0.6)', textAlign: 'center', marginBottom: 14, maxWidth: 300 }}>
         Anyone who sees your story can screenshot it. Only what's shown here is included.
       </div>
 
-      {/* actions */}
       <div style={{ width: '100%', display: 'flex', gap: 10 }}>
         <button onClick={save} className="pressable" style={{ flex: 1, background: 'rgba(255,255,255,0.14)', color: '#fff', border: 'none', borderRadius: T.r.pill, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer' }}>Save image</button>
         <button onClick={share} disabled={busy} className="pressable" style={{ flex: 1.4, background: T.accent, color: T.ink, border: 'none', borderRadius: T.r.pill, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 16, cursor: 'pointer', opacity: busy ? 0.6 : 1 }}>Share</button>

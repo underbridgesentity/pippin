@@ -4,6 +4,7 @@ import { TabBar, type Tab } from './components/TabBar'
 import { Toast } from './components/Toast'
 import { Mascot } from './components/Mascot'
 import { CelebrationOverlay } from './components/Celebration'
+import { StoryComposer } from './components/StoryComposer'
 import { T } from './lib/theme'
 import { Home } from './screens/Home'
 import { Quests } from './screens/Quests'
@@ -15,7 +16,7 @@ import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
 import { Settings } from './screens/Settings'
 import { CheckInSheet, CircleSheet, CommentsSheet, ComposeSheet, MemberProfileSheet, NotificationsSheet } from './screens/Social'
-import { StoreProvider, useStore, actions } from './lib/store'
+import { StoreProvider, useStore, actions, type Celebration } from './lib/store'
 import { api } from './lib/api'
 import { findDecoratedPost } from './lib/selectors'
 import { firstName } from './lib/format'
@@ -45,6 +46,7 @@ function Root() {
   const [circleId, setCircleId] = useState<string | null>(null)
   const [notifs, setNotifs] = useState(false)
   const [checkInOpen, setCheckInOpen] = useState(false)
+  const [storyCeleb, setStoryCeleb] = useState<Celebration | null>(null)
 
   // The four tabs share one scroll container, so reset it to the top on each
   // tab change (otherwise a tab opens at the previous tab's scroll position).
@@ -126,7 +128,8 @@ function Root() {
       <MemberProfileSheet memberId={memberId} onClose={() => setMemberId(null)} />
 
       {toast && <Toast key={toast.key} message={toast.msg} />}
-      {celebration && <CelebrationOverlay data={celebration} onDismiss={() => actions.dismissCelebration()} />}
+      {celebration && <CelebrationOverlay data={celebration} onDismiss={() => actions.dismissCelebration()} onShare={() => setStoryCeleb(celebration)} />}
+      <StoryComposer story={storyCeleb ? { type: 'milestone', celebration: storyCeleb } : null} name={account?.name ?? ''} onClose={() => setStoryCeleb(null)} />
     </>
   )
 }

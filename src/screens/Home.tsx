@@ -225,7 +225,7 @@ export function Home({
         shown.map((p) => <FeedCard key={p.id} post={p} now={now} onOpenPost={onOpenPost} onOpenMember={onOpenMember} />)
       )}
     </div>
-    <StoryComposer meal={storyMeal} name={account.name} onClose={() => setStoryMeal(null)} />
+    <StoryComposer story={storyMeal ? { type: 'meal', meal: storyMeal } : null} name={account.name} onClose={() => setStoryMeal(null)} />
     </>
   )
 }
