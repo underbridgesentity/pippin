@@ -143,7 +143,7 @@ export function Auth() {
 function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div
-      className="fettle-scroll"
+      className="pippin-scroll"
       style={{ position: 'absolute', inset: 0, zIndex: 90, background: `radial-gradient(circle at 50% 18%,${T.solid},${T.bg} 60%)`, display: 'flex', flexDirection: 'column', padding: '56px 26px 26px', overflowY: 'auto' }}
     >
       {children}

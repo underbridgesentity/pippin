@@ -1,6 +1,6 @@
 # Meal photo analyzer (Gemini 2.5 Flash-Lite)
 
-When a user snaps a meal, Fettle identifies the foods on the plate and estimates
+When a user snaps a meal, Pippin identifies the foods on the plate and estimates
 their calories, then pre-fills them on the log screen for the user to confirm or
 edit. It works for ANY meal, not just a fixed list: combinations (eggs and
 toast), home-cooked plates, and packaged items (it reads a visible nutrition

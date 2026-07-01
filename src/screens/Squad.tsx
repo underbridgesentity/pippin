@@ -379,7 +379,7 @@ function BuddySection({ d, onCheckIn, onOpenMember }: { d: Derived; onCheckIn: (
       <div style={{ ...card, padding: 16, marginBottom: 20 }}>
         <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 17, color: T.text, marginBottom: 4 }}>🤝 Pick an accountability buddy</div>
         <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 13, color: T.dim, marginBottom: 14 }}>Pair up with a friend to check in daily and keep each other on track.</div>
-        <div className="fettle-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto' }}>
+        <div className="pippin-scroll" style={{ display: 'flex', gap: 10, overflowX: 'auto' }}>
           {d.friends.map((f) => (
             <button key={f.id} onClick={() => actions.setBuddy(f.id)} style={{ flex: 'none', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', width: 64 }}>
               <Avatar initial={f.initial} gradient={f.avatar} size={48} radius={16} />

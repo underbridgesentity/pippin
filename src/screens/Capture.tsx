@@ -309,7 +309,7 @@ function LogScreen({
   const quick = QUICK_ADD_IDS.map((id) => FOOD_BY_ID[id]).filter(Boolean)
 
   return (
-    <div className="fettle-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: T.bg, position: 'relative', WebkitOverflowScrolling: 'touch' }}>
+    <div className="pippin-scroll" style={{ flex: 1, minHeight: 0, overflowY: 'auto', background: T.bg, position: 'relative', WebkitOverflowScrolling: 'touch' }}>
       {/* header with photo */}
       <div style={{ position: 'relative', height: 168, background: photo ? '#000' : T.solid, overflow: 'hidden' }}>
         {photo && <img src={photo} alt="Your meal" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}

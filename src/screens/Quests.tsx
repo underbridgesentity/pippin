@@ -90,7 +90,7 @@ export function Quests() {
 
       {/* browse */}
       <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text, marginBottom: 12, paddingLeft: 2 }}>Browse challenges</div>
-      <div className="fettle-scroll" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
+      <div className="pippin-scroll" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
         {CHALLENGE_CATS.map((cc) => (
           <button key={cc} onClick={() => setCat(cc)} style={{ flex: 'none', background: cat === cc ? T.accent : T.glass, color: cat === cc ? T.ink : T.dim, border: cat === cc ? 'none' : `1px solid ${T.line}`, borderRadius: 14, padding: '8px 14px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{cc}</button>
         ))}

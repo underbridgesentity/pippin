@@ -32,7 +32,7 @@ export function Sheet({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="fettle-scroll"
+        className="pippin-scroll"
         style={{
           background: T.solid,
           borderRadius: '28px 28px 0 0',

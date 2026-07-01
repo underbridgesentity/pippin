@@ -8,7 +8,7 @@ import { computeWeeklyXp } from '../selectors'
 import { storage } from '../storage'
 import type { Account, Goal, PostType, UserState } from '../types'
 import type { SeedMember } from '../seed'
-import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type CommunityPost, type FettleApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
+import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type CommunityPost, type PippinApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
 
 // Only offer social buttons for providers actually enabled in Supabase, set via
 // VITE_AUTH_PROVIDERS (e.g. "google" or "google,apple"). Empty = email only.
@@ -26,7 +26,7 @@ function toFriendProfile(p: { id: string; name: string; username?: string | null
   return { id: p.id, name: p.name || 'Friend', username: p.username ?? null, avatar: p.avatar || gradientFor(p.id) }
 }
 
-export function createSupabaseApi(url: string, anonKey: string): FettleApi {
+export function createSupabaseApi(url: string, anonKey: string): PippinApi {
   const sb: SupabaseClient = createClient(url, anonKey, {
     auth: { persistSession: true, autoRefreshToken: true },
   })

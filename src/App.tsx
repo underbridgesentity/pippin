@@ -25,7 +25,7 @@ import type { PostType } from './lib/types'
 export function App() {
   return (
     <StoreProvider>
-      <div className="fettle-stage">
+      <div className="pippin-stage">
         <IOSDevice>
           <Root />
         </IOSDevice>
@@ -90,7 +90,7 @@ function Root() {
 
   return (
     <>
-      <div ref={scrollRef} className="fettle-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
+      <div ref={scrollRef} className="pippin-scroll" style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain' }}>
         {tab === 'home' && (
           <Home
             onOpenCapture={() => setCapture(true)}

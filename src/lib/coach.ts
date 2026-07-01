@@ -29,7 +29,7 @@ export function coachAvailable(): boolean {
   return Boolean(url && key)
 }
 
-const CACHE_KEY = 'fettle:coachplan'
+const CACHE_KEY = 'pippin:coachplan'
 
 function dayStamp(): string {
   return new Date().toISOString().slice(0, 10)

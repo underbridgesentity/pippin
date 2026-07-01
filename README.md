@@ -1,4 +1,4 @@
-# Fettle
+# Pippin
 
 > Reach your goals. Together.
 
@@ -55,7 +55,7 @@ Everything below is real, computed from what you log, and persisted across reloa
   against steps / meals / activities / days.
 - **Leaderboard**, seeded community members + you, ranked by weekly XP; you climb
   as you log.
-- **Community**, Fettle is a *social* wellness platform. Share **updates, tips,
+- **Community**, Pippin is a *social* wellness platform. Share **updates, tips,
   questions and wins**; the squad reacts (👏🔥💪❤️) and replies with encouragement
   and tips. Visit **member profiles** and cheer them on, filter the feed (Tips /
   Questions / Wins), and get a **notifications** feed of support received. Your
@@ -98,7 +98,7 @@ src/
 ```
 
 **Going multi-user** is already wired: add a free Supabase project's URL + anon
-key to `.env.local` and Fettle switches to real auth, cloud-synced state, and a
+key to `.env.local` and Pippin switches to real auth, cloud-synced state, and a
 real global leaderboard, no code changes. Full walkthrough in
 [SUPABASE.md](SUPABASE.md). Friends / friends-only leaderboards are the next
 increment from there.

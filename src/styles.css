@@ -35,11 +35,11 @@ body {
 }
 
 /* Hide scrollbars inside the app, matches the prototype's chromeless scroll */
-.fettle-scroll::-webkit-scrollbar {
+.pippin-scroll::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
-.fettle-scroll {
+.pippin-scroll {
   scrollbar-width: none;
 }
 
@@ -149,7 +149,7 @@ button {
 }
 
 /* Page background that frames the phone on larger screens */
-.fettle-stage {
+.pippin-stage {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -161,7 +161,7 @@ button {
 
 /* On phones, let the app fill the whole viewport with no frame padding */
 @media (max-width: 640px) {
-  .fettle-stage {
+  .pippin-stage {
     padding: 0;
     background: var(--bg);
   }

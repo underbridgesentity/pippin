@@ -1,5 +1,5 @@
 // The data-access contract. Both the local-storage adapter and the Supabase
-// adapter implement FettleApi, so the rest of the app is backend-agnostic.
+// adapter implement PippinApi, so the rest of the app is backend-agnostic.
 
 import type { Account, FeedEntry, Goal, PostType, Settings, UserState } from '../types'
 import type { SeedMember } from '../seed'
@@ -25,7 +25,7 @@ export type CommunityPost = {
 /** Onboarding goal stashed before an OAuth redirect, applied on return. */
 export const PENDING_GOAL_KEY = 'pendingGoal'
 
-export interface FettleApi {
+export interface PippinApi {
   /** which backend is active, handy for UI hints */
   readonly mode: 'local' | 'supabase'
   /** social providers this backend supports */

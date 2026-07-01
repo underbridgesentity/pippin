@@ -1,11 +1,11 @@
--- Fettle backend schema. Run this in the Supabase SQL editor (see SUPABASE.md).
+-- Pippin backend schema. Run this in the Supabase SQL editor (see SUPABASE.md).
 -- Two tables: `profiles` (public stats for the leaderboard) and `user_state`
 -- (each user's full app state as JSON, private to them). RLS enforces both.
 
 -- ── profiles ────────────────────────────────────────────────────────────────
 create table if not exists public.profiles (
   id uuid primary key references auth.users on delete cascade,
-  name text not null default 'Fettler',
+  name text not null default 'Friend',
   avatar text not null default '',
   total_xp integer not null default 0,
   weekly_xp integer not null default 0,
@@ -59,8 +59,8 @@ begin
   insert into public.profiles (id, name, username)
   values (
     new.id,
-    coalesce(new.raw_user_meta_data->>'name', 'Fettler'),
-    'fettler_' || substr(replace(new.id::text, '-', ''), 1, 8)
+    coalesce(new.raw_user_meta_data->>'name', 'Friend'),
+    'pippin_' || substr(replace(new.id::text, '-', ''), 1, 8)
   )
   on conflict (id) do nothing;
   return new;

@@ -1,6 +1,6 @@
 # Turning on the real backend
 
-Fettle runs on local storage out of the box. Point it at a free Supabase project
+Pippin runs on local storage out of the box. Point it at a free Supabase project
 to get **real accounts, cloud sync across devices, and a real global leaderboard**
 (everyone who signs up appears, ranked by weekly XP). No app code changes, it's
 all configuration, because the UI talks to one data-access layer
@@ -36,7 +36,7 @@ email-confirmation step to the onboarding flow.)
    VITE_SUPABASE_ANON_KEY=YOUR-ANON-KEY
    ```
 
-3. Restart the dev server (`npm run dev`). Fettle now uses Supabase.
+3. Restart the dev server (`npm run dev`). Pippin now uses Supabase.
 
 To confirm which backend is live at runtime: `import { api } from './lib/api'` and
 check `api.mode` (`'local'` or `'supabase'`).

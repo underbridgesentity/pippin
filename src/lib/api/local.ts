@@ -5,7 +5,7 @@ import { storage } from '../storage'
 import { gradientFor } from '../format'
 import { MEMBERS, type SeedMember } from '../seed'
 import type { Account, UserState } from '../types'
-import { ApiError, defaultState, validateSignup, type FettleApi } from './contract'
+import { ApiError, defaultState, validateSignup, type PippinApi } from './contract'
 
 const ACCOUNTS = 'accounts'
 const SESSION = 'session'
@@ -26,7 +26,7 @@ function saveAccounts(list: Account[]): void {
   storage.set(ACCOUNTS, list)
 }
 
-export const localApi: FettleApi = {
+export const localApi: PippinApi = {
   mode: 'local',
   socialProviders: ['google', 'apple'],
 
@@ -69,7 +69,7 @@ export const localApi: FettleApi = {
   // No real OAuth offline, sign into a stable per-provider demo account so the
   // one-tap flow works locally. Real Google/Apple kicks in with Supabase.
   async signInWithProvider(provider, opts) {
-    const email = `${provider}.demo@fettle.local`
+    const email = `${provider}.demo@pippin.local`
     const list = accounts()
     let account = list.find((a) => a.email === email)
     if (!account) {

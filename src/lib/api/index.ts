@@ -3,12 +3,12 @@
 
 import { localApi } from './local'
 import { createSupabaseApi } from './supabase'
-import type { FettleApi } from './contract'
+import type { PippinApi } from './contract'
 
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const api: FettleApi = url && key ? createSupabaseApi(url, key) : localApi
+export const api: PippinApi = url && key ? createSupabaseApi(url, key) : localApi
 
 export { ApiError, defaultState, normalize, DEFAULT_SETTINGS, PENDING_GOAL_KEY } from './contract'
-export type { FettleApi, SocialProvider, CommunityPost } from './contract'
+export type { PippinApi, SocialProvider, CommunityPost } from './contract'

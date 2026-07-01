@@ -213,7 +213,7 @@ export function Home({
       </button>
 
       {/* filters */}
-      <div className="fettle-scroll" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
+      <div className="pippin-scroll" style={{ display: 'flex', gap: 8, marginBottom: 14, overflowX: 'auto', paddingBottom: 2 }}>
         {FILTERS.map((f) => (
           <button key={f.id} onClick={() => setFilter(f.id)} style={{ flex: 'none', background: filter === f.id ? T.accent : T.glass, color: filter === f.id ? T.ink : T.dim, border: filter === f.id ? 'none' : `1px solid ${T.line}`, borderRadius: 14, padding: '8px 14px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer', whiteSpace: 'nowrap' }}>{f.label}</button>
         ))}
