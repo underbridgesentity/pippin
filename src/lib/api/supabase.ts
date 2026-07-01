@@ -266,9 +266,11 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     // ── community feed ──────────────────────────────────────────────────────
     async listCommunity(limit = 40): Promise<CommunityPost[]> {
       const me = await uid()
+      // profiles must be disambiguated by FK: post_reactions/post_comments also
+      // relate posts to profiles, which makes a bare `profiles` embed ambiguous.
       const rich = await sb
         .from('posts')
-        .select('id, author, post_type, text, photo_url, created_at, profiles(name, avatar), post_reactions(user_id, kind), post_comments(id, author, text, tip, created_at, profiles(name, avatar))')
+        .select('id, author, post_type, text, photo_url, created_at, profiles!posts_author_fkey(name, avatar), post_reactions(user_id, kind), post_comments(id, author, text, tip, created_at, profiles!post_comments_author_fkey(name, avatar))')
         .order('created_at', { ascending: false })
         .limit(limit)
       // The reactions/comments tables may not exist yet (older schema).
