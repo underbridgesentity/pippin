@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { Mascot } from '../components/Mascot'
 import { Confetti } from '../components/Confetti'
+import { StoryComposer, type StoryInput } from '../components/StoryComposer'
 import { useStore, actions } from '../lib/store'
 import { useDerived } from '../lib/hooks'
 import { STAGES } from '../lib/gamification'
@@ -10,7 +12,18 @@ import type { WeightEntry } from '../lib/types'
 export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings: () => void; onShareWin: () => void; onSnap: () => void }) {
   const { account, data } = useStore()
   const d = useDerived()
+  const [story, setStory] = useState<StoryInput | null>(null)
   if (!account || !d || !data) return null
+
+  // Share the user's current standing as a story: a streak card when they're on
+  // one, otherwise their level. eyebrow overrides the "LEVEL UP" event wording.
+  function openShare() {
+    if (!d) return
+    const celeb = d.streak >= 3
+      ? { key: Date.now(), kind: 'streak' as const, title: `${d.streak}-day streak!`, subtitle: 'Keeping it alive on Pippin', stage: d.stageName }
+      : { key: Date.now(), kind: 'level' as const, title: `Level ${d.level}`, subtitle: d.stageName, stage: d.stageName, eyebrow: 'MY PROGRESS' }
+    setStory({ type: 'milestone', celebration: celeb })
+  }
 
   const stats = [
     { value: num(d.streak), label: 'Day streak', color: T.amber },
@@ -36,6 +49,7 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
   const currentStageIdx = STAGES.findIndex((s) => s.name === d.stageName)
 
   return (
+    <>
     <div data-screen-label="Profile" style={{ padding: '56px 18px 116px' }}>
       {/* character + identity */}
       <div style={{ ...card, borderRadius: 28, padding: '22px 18px 20px', marginBottom: 14, position: 'relative', overflow: 'hidden' }}>
@@ -93,6 +107,9 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
       {/* proud moment */}
       <div style={{ ...card, position: 'relative', borderRadius: 24, padding: 18, marginBottom: 18, overflow: 'hidden' }}>
         <Confetti count={24} />
+        <button onClick={openShare} aria-label="Share to story" style={{ position: 'absolute', top: 14, right: 14, zIndex: 2, width: 34, height: 34, borderRadius: 10, background: T.glassHi, border: `1px solid ${T.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke={T.accent} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15V3M8 7l4-4 4 4M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6" /></svg>
+        </button>
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ flex: 'none' }}>
             <Mascot stage="Sprout" size={64} mood={celebratory ? 'cheer' : 'happy'} />
@@ -155,6 +172,8 @@ export function Profile({ onOpenSettings, onShareWin, onSnap }: { onOpenSettings
         </>
       )}
     </div>
+    <StoryComposer story={story} name={account.name} onClose={() => setStory(null)} />
+    </>
   )
 }
 

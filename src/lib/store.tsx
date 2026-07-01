@@ -39,7 +39,7 @@ const POST_ACTION: Record<PostType, string> = {
 
 // A big, earned moment that warrants a full-screen celebration (confetti +
 // cheering Pip), as opposed to a quiet toast.
-export type Celebration = { key: number; kind: 'level' | 'badge' | 'streak'; title: string; subtitle: string; stage: string }
+export type Celebration = { key: number; kind: 'level' | 'badge' | 'streak'; title: string; subtitle: string; stage: string; eyebrow?: string }
 
 type StoreState = {
   status: 'loading' | 'ready'

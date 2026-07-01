@@ -253,7 +253,7 @@ export async function renderMilestoneStory(canvas: HTMLCanvasElement, opts: Mile
   ctx.fillStyle = ACCENT
   ctx.font = `800 42px ${BODY}`
   if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '6px'
-  ctx.fillText(KIND_EYEBROW[cel.kind], W / 2, y)
+  ctx.fillText(cel.eyebrow ?? KIND_EYEBROW[cel.kind], W / 2, y)
   if ('letterSpacing' in ctx) (ctx as CanvasRenderingContext2D & { letterSpacing: string }).letterSpacing = '0px'
 
   const hero = cel.kind === 'badge' ? cel.subtitle : cel.title
