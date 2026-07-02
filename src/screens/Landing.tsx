@@ -101,7 +101,7 @@ function Hero({ onStart }: { onStart: () => void }) {
             className="ld-up"
             style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: T.solid, borderRadius: T.r.pill, padding: '8px 16px', boxShadow: '0 8px 22px rgba(48,38,22,0.09)', transform: 'rotate(-2deg)', fontFamily: T.display, fontWeight: 600, fontSize: 14, color: T.dim, animationDelay: '0s' }}
           >
-            <span style={{ fontSize: 17 }}>🍏</span> The friendly health game
+            <span style={{ fontSize: 17 }}>🍏</span> The fun way to get healthy
           </div>
           <h1 className="ld-h1 ld-up" style={{ animationDelay: '.06s' }}>
             Reach your goals.
@@ -112,8 +112,8 @@ function Hero({ onStart }: { onStart: () => void }) {
             </span>
           </h1>
           <p className="ld-sub ld-up" style={{ animationDelay: '.12s', margin: '0 auto 26px' }}>
-            Pippin turns healthy habits into a game you play with friends. Snap your meals, crush
-            challenges, keep your streak, and grow Pip from a tiny seed into a legend.
+            Pippin is a health tracker that feels like play. Snap your meals, crush challenges
+            with friends, keep your streak, and grow Pip from a tiny seed into a legend.
           </p>
           <div className="ld-hero-ctas ld-up" style={{ display: 'flex', alignItems: 'center', gap: 18, flexWrap: 'wrap', animationDelay: '.18s' }}>
             <button
