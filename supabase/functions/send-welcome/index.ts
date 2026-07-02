@@ -39,7 +39,7 @@ function welcomeHtml(name: string): string {
         <li>🏆 Join challenges and earn badges</li>
         <li>🔥 Build a streak, watch me grow with you</li>
       </ul>
-      <a href="https://getpippin.vercel.app" style="display:inline-block;background:#2FC36B;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 28px;border-radius:999px">Open Pippin</a>
+      <a href="https://www.pippin.co.za" style="display:inline-block;background:#2FC36B;color:#ffffff;text-decoration:none;font-weight:700;font-size:16px;padding:14px 28px;border-radius:999px">Open Pippin</a>
     </div>
     <p style="color:#ABA493;font-size:12px;text-align:center;margin:16px 0 0">
       Sent by Pippin because you created an account. Reach your goals, together.
