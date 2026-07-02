@@ -509,9 +509,11 @@ function Footer({ onStart, onLogin }: { onStart: () => void; onLogin: () => void
             <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.faint }}>Reach your goals. Together.</div>
           </div>
         </div>
-        <div style={{ display: 'flex', gap: 6 }}>
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
           <button className="ld-nav-link" style={{ display: 'inline-block' }} onClick={onLogin}>Log in</button>
           <button className="ld-nav-link" style={{ display: 'inline-block' }} onClick={onStart}>Get started</button>
+          <a className="ld-nav-link" style={{ display: 'inline-block', textDecoration: 'none' }} href="/privacy.html">Privacy</a>
+          <a className="ld-nav-link" style={{ display: 'inline-block', textDecoration: 'none' }} href="/terms.html">Terms</a>
         </div>
       </div>
       <div style={{ fontFamily: T.body, fontWeight: 600, fontSize: 12.5, color: T.faint, marginTop: 18 }}>

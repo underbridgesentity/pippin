@@ -43,6 +43,8 @@ export type Celebration = { key: number; kind: 'level' | 'badge' | 'streak'; tit
 
 type StoreState = {
   status: 'loading' | 'ready'
+  /** true when opened from a password-reset link; App shows the set-new-password screen */
+  passwordRecovery?: boolean
   account: Account | null
   data: UserState | null
   community: SeedMember[] | null
@@ -79,6 +81,13 @@ function freshUserData(account: Account, goal: Goal): UserState {
 }
 
 async function init() {
+  // A reset link opens the app with a recovery session. Intercept it before the
+  // normal session check so we show "set a new password", not the logged-in app.
+  if (api.isPasswordRecovery()) {
+    current = { status: 'ready', passwordRecovery: true, account: null, data: null, community: null, toast: null, celebration: null }
+    emit()
+    return
+  }
   try {
     const account = await api.getSession()
     if (account) {
@@ -346,6 +355,30 @@ export const actions = {
     const loaded = await api.loadState(account.id)
     const data = loaded ? normalize(loaded) : defaultState('eat', Date.now())
     current = { ...current, account, data, community: null }
+    emit()
+    refreshCommunity(account.id); refreshFeed()
+  },
+
+  // Always resolves (never reveals whether the email exists). The caller shows
+  // the same "check your inbox" confirmation regardless.
+  async sendPasswordReset(email: string) {
+    await api.sendPasswordReset(email).catch(() => {})
+  },
+
+  // Set the new password for the recovery session, then drop into the app.
+  async completePasswordReset(newPassword: string) {
+    await api.completePasswordReset(newPassword)
+    const account = await api.getSession()
+    if (!account) {
+      // Recovery session expired; send them back to a clean login.
+      current = { ...current, passwordRecovery: false, account: null, data: null }
+      emit()
+      return
+    }
+    const loaded = await api.loadState(account.id)
+    const data = loaded ? normalize(loaded) : freshUserData(account, 'eat')
+    if (!loaded) void api.saveState(account.id, data)
+    current = { ...current, passwordRecovery: false, account, data, community: null }
     emit()
     refreshCommunity(account.id); refreshFeed()
   },

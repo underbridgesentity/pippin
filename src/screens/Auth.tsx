@@ -10,7 +10,7 @@ import type { Goal } from '../lib/types'
 const GRAPE = T.accent
 const CTA = ['Get started', 'Continue', 'Continue', 'Create account']
 
-type Mode = 'onboard' | 'login'
+type Mode = 'onboard' | 'login' | 'reset'
 type Err = { field?: 'name' | 'email' | 'password'; message: string } | null
 
 export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup' | 'login'; onExit?: () => void } = {}) {
@@ -25,7 +25,20 @@ export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup
   const [password, setPassword] = useState('')
   const [err, setErr] = useState<Err>(null)
   const [busy, setBusy] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
   const hasSocial = api.socialProviders.length > 0
+
+  async function submitReset() {
+    if (!email.trim()) {
+      setErr({ field: 'email', message: 'Enter your email first' })
+      return
+    }
+    setBusy(true)
+    setErr(null)
+    await actions.sendPasswordReset(email)
+    setBusy(false)
+    setResetSent(true) // always confirm, whether or not the email exists
+  }
 
   async function submitSignup() {
     setBusy(true)
@@ -86,6 +99,36 @@ export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup
 
   const canBack = mode === 'login' || step > minStep || !!onExit
 
+  if (mode === 'reset') {
+    return (
+      <Shell>
+        <Header canBack onBack={() => { setMode('login'); setErr(null); setResetSent(false) }} />
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center', marginBottom: 22 }}>
+            <Mascot stage="Sprout" size={88} float mood={resetSent ? 'happy' : 'thinking'} />
+            <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 30, color: GRAPE, marginTop: 6 }}>{resetSent ? 'Check your inbox' : 'Reset your password'}</div>
+            <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim, padding: '0 6px' }}>
+              {resetSent ? `If an account exists for ${email.trim()}, a reset link is on its way.` : 'We will email you a link to set a new password.'}
+            </div>
+          </div>
+          {!resetSent && (
+            <>
+              <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@email.com" autoFocus onEnter={submitReset} />
+              {err && <ErrorNote>{err.message}</ErrorNote>}
+            </>
+          )}
+        </div>
+        {resetSent ? (
+          <PrimaryButton onClick={() => { setMode('login'); setResetSent(false); setErr(null) }}>Back to log in</PrimaryButton>
+        ) : (
+          <PrimaryButton onClick={submitReset} disabled={busy}>
+            {busy ? 'Sending…' : 'Send reset link'}
+          </PrimaryButton>
+        )}
+      </Shell>
+    )
+  }
+
   if (mode === 'login') {
     return (
       <Shell>
@@ -104,6 +147,11 @@ export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup
           )}
           <Field label="Email" type="email" value={email} onChange={setEmail} placeholder="you@email.com" autoFocus />
           <Field label="Password" type="password" value={password} onChange={setPassword} placeholder="Your password" onEnter={submitLogin} />
+          <div style={{ textAlign: 'right', marginTop: -6, marginBottom: 4 }}>
+            <button onClick={() => { setMode('reset'); setErr(null); setResetSent(false) }} style={{ background: 'none', border: 'none', padding: '4px 2px', fontFamily: T.body, fontWeight: 700, fontSize: 13, color: T.dim, cursor: 'pointer' }}>
+              Forgot password?
+            </button>
+          </div>
           {err && <ErrorNote>{err.message}</ErrorNote>}
         </div>
         <PrimaryButton onClick={submitLogin} disabled={busy}>
@@ -140,9 +188,62 @@ export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup
         </>
       )}
 
+      {step === 3 && (
+        <div style={{ textAlign: 'center', marginTop: 12, fontFamily: T.body, fontWeight: 600, fontSize: 12, color: T.faint, lineHeight: 1.5 }}>
+          By creating an account you agree to our{' '}
+          <a href="/terms.html" style={{ color: T.dim, fontWeight: 800 }}>Terms</a> and{' '}
+          <a href="/privacy.html" style={{ color: T.dim, fontWeight: 800 }}>Privacy Policy</a>.
+        </div>
+      )}
+
       {step === 0 && (
         <LinkButton onClick={() => { setMode('login'); setErr(null) }}>I already have an account</LinkButton>
       )}
+    </Shell>
+  )
+}
+
+/** Shown when the app is opened from a password-reset email link. */
+export function ResetPassword() {
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [err, setErr] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
+
+  async function submit() {
+    if (password.length < 8) {
+      setErr('Use at least 8 characters')
+      return
+    }
+    if (password !== confirm) {
+      setErr('Those passwords do not match')
+      return
+    }
+    setBusy(true)
+    setErr(null)
+    try {
+      await actions.completePasswordReset(password)
+    } catch (e) {
+      setErr((e as ApiError).message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <Shell>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', marginBottom: 22 }}>
+          <Mascot stage="Sprout" size={88} float mood="cheer" />
+          <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 30, color: GRAPE, marginTop: 6 }}>Set a new password</div>
+          <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim }}>Pick something you will remember this time.</div>
+        </div>
+        <Field label="New password" type="password" value={password} onChange={setPassword} placeholder="At least 8 characters" autoFocus />
+        <Field label="Confirm password" type="password" value={confirm} onChange={setConfirm} placeholder="Type it again" onEnter={submit} />
+        {err && <ErrorNote>{err}</ErrorNote>}
+      </div>
+      <PrimaryButton onClick={submit} disabled={busy}>
+        {busy ? 'Saving…' : 'Save new password'}
+      </PrimaryButton>
     </Shell>
   )
 }

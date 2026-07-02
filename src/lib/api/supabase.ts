@@ -366,6 +366,25 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
       // Server-side idempotent (welcome_sent metadata flag); safe to fire blind.
       await sb.functions.invoke('send-welcome').catch(() => {})
     },
+
+    async sendPasswordReset(email) {
+      // redirectTo lands back on the app; Supabase appends a recovery token in
+      // the URL hash, which supabase-js turns into a temporary session.
+      const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined
+      await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo })
+    },
+
+    isPasswordRecovery() {
+      if (typeof window === 'undefined') return false
+      return /(?:^|[#&?])type=recovery(?:&|$)/.test(window.location.hash) || new URLSearchParams(window.location.search).get('type') === 'recovery'
+    },
+
+    async completePasswordReset(newPassword) {
+      const { error } = await sb.auth.updateUser({ password: newPassword })
+      if (error) throw new ApiError(error.message)
+      // Clear the recovery token from the URL so a refresh is clean.
+      if (typeof window !== 'undefined') window.history.replaceState(null, '', window.location.pathname)
+    },
   }
 }
 

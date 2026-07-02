@@ -38,6 +38,12 @@ export interface PippinApi {
   getSession(): Promise<Account | null>
   signUp(input: { name: string; email: string; password: string; goal: Goal }): Promise<Account>
   logIn(input: { email: string; password: string }): Promise<Account>
+  /** email a password-reset link (no-op on local). Never reveals whether the email exists. */
+  sendPasswordReset(email: string): Promise<void>
+  /** true when the app was opened from a reset link and is awaiting a new password */
+  isPasswordRecovery(): boolean
+  /** set a new password for the recovery session opened by a reset link */
+  completePasswordReset(newPassword: string): Promise<void>
   /** Resolves to an Account (local) or 'redirect' when the page navigates to the provider (Supabase OAuth). */
   signInWithProvider(provider: SocialProvider, opts: { goal: Goal }): Promise<Account | 'redirect'>
   logOut(): Promise<void>

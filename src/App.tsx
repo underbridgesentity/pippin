@@ -12,6 +12,7 @@ import { Quests } from './screens/Quests'
 import { Squad } from './screens/Squad'
 import { Profile } from './screens/Profile'
 import { Landing } from './screens/Landing'
+import { ResetPassword } from './screens/Auth'
 import { Welcome } from './screens/Welcome'
 import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
@@ -32,7 +33,7 @@ export function App() {
 }
 
 function Root() {
-  const { status, account, data, toast, celebration, communityPosts } = useStore()
+  const { status, passwordRecovery, account, data, toast, celebration, communityPosts } = useStore()
   const [tab, setTab] = useState<Tab>('home')
   const [capture, setCapture] = useState(false)
   const [activity, setActivity] = useState(false)
@@ -80,6 +81,7 @@ function Root() {
   }, [])
 
   if (status === 'loading') return <CenterFrame><Splash /></CenterFrame>
+  if (passwordRecovery) return <CenterFrame><ResetPassword /></CenterFrame>
   if (!account || !data) return <Landing />
   if (!data.welcomed) return <CenterFrame><Welcome name={firstName(account.name)} /></CenterFrame>
 

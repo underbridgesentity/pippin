@@ -135,4 +135,9 @@ export const localApi: PippinApi = {
   async commentOnPost() { return null },
   async deleteCommentRemote() {},
   async sendWelcomeEmail() {},
+
+  // Local mode has no real email; reset is a no-op so the UI still confirms.
+  async sendPasswordReset() {},
+  isPasswordRecovery() { return false },
+  async completePasswordReset() {},
 }
