@@ -12,16 +12,25 @@ import { buildCircleFeed, circleGoalProgress, type DecoratedFeed } from '../lib/
 import type { Comment, Mood, PostType } from '../lib/types'
 import { T, card, inset, eyebrow, hexA } from '../lib/theme'
 
+// Row in the post moderation menu (report / block).
+const modItem: React.CSSProperties = {
+  display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none',
+  padding: '12px 16px', cursor: 'pointer', fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: 14, color: T.text,
+}
+
 // ── Comments + reactions thread ──────────────────────────────────────────────
 export function CommentsSheet({ post, onClose, onOpenMember }: { post: DecoratedFeed | null; onClose: () => void; onOpenMember: (id: string) => void }) {
   const { account } = useStore()
   const [text, setText] = useState('')
   const [tip, setTip] = useState(false)
+  const [modOpen, setModOpen] = useState(false)
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (post) endRef.current?.scrollIntoView({ block: 'nearest' })
   }, [post?.commentCount])
+
+  useEffect(() => { setModOpen(false) }, [post?.id])
 
   if (!post || !account) return null
 
@@ -50,6 +59,20 @@ export function CommentsSheet({ post, onClose, onOpenMember }: { post: Decorated
             <button onClick={() => { actions.deletePost(post.id); onClose() }} aria-label="Delete post" style={{ width: 34, height: 34, borderRadius: 11, background: hexA(T.rose, 0.14), border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: 'none' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.rose} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6" /></svg>
             </button>
+          )}
+          {!isMine && (
+            <div style={{ position: 'relative', flex: 'none' }}>
+              <button onClick={() => setModOpen((o) => !o)} aria-label="Post options" style={{ width: 34, height: 34, borderRadius: 11, background: T.glass, border: `1px solid ${T.line}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill={T.dim}><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+              </button>
+              {modOpen && (
+                <div style={{ position: 'absolute', top: 40, right: 0, zIndex: 5, background: T.solid, border: `1px solid ${T.line}`, borderRadius: 14, boxShadow: '0 12px 30px rgba(40,33,22,.16)', overflow: 'hidden', minWidth: 168 }}>
+                  <button onClick={() => { actions.reportPost(post.id); onClose() }} style={modItem}>🚩 Report post</button>
+                  <div style={{ height: 1, background: T.lineSoft }} />
+                  <button onClick={() => { actions.blockUser(post.author, post.name.replace(/ \(You\)$/, '')); onClose() }} style={{ ...modItem, color: T.rose }}>🚫 Block {post.name.split(' ')[0]}</button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

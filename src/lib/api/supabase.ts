@@ -298,7 +298,15 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
         : rich
       const { data, error } = res as { data: unknown; error: unknown }
       if (error || !data) return []
-      return (data as unknown as PostRow[]).map((r) => {
+      // Hide posts from users the viewer has blocked (Guideline 1.2).
+      const blocked = new Set<string>()
+      if (me) {
+        const { data: bd } = await sb.from('blocks').select('blocked').eq('blocker', me)
+        ;(bd ?? []).forEach((r) => blocked.add((r as { blocked: string }).blocked))
+      }
+      return (data as unknown as PostRow[])
+        .filter((r) => !blocked.has(r.author))
+        .map((r) => {
         // Split reactions into "everyone else" counts + the viewer's own, matching
         // how the feed decorator layers my reaction on top of base counts.
         const reactions: Partial<Record<ReactionKind, number>> = {}
@@ -379,6 +387,31 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     async sendWelcomeEmail() {
       // Server-side idempotent (welcome_sent metadata flag); safe to fire blind.
       await sb.functions.invoke('send-welcome').catch(() => {})
+    },
+
+    async reportPost(postId, reason) {
+      const me = await uid()
+      if (!me) return
+      await sb.from('post_reports').insert({ post_id: postId, reporter: me, reason: reason ?? null })
+    },
+
+    async blockUser(userId) {
+      const me = await uid()
+      if (!me || userId === me) return
+      await sb.from('blocks').upsert({ blocker: me, blocked: userId })
+    },
+
+    async unblockUser(userId) {
+      const me = await uid()
+      if (!me) return
+      await sb.from('blocks').delete().eq('blocker', me).eq('blocked', userId)
+    },
+
+    async listBlocked() {
+      const me = await uid()
+      if (!me) return []
+      const { data } = await sb.from('blocks').select('blocked').eq('blocker', me)
+      return (data ?? []).map((r) => (r as { blocked: string }).blocked)
     },
 
     async sendPasswordReset(email) {

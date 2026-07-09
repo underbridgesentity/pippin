@@ -643,6 +643,24 @@ export const actions = {
     commit({ ...data, feed: data.feed.filter((e) => e.id !== feedId), comments, reactions, cheers }, { toast: 'Post deleted' })
   },
 
+  // ── moderation (App Store Guideline 1.2) ──
+  reportPost(feedId: string) {
+    if (api.realFeed) void api.reportPost(feedId, 'user_report').catch(() => {})
+    // Remove it from the reporter's view immediately.
+    current = { ...current, communityPosts: (current.communityPosts ?? []).filter((e) => e.id !== feedId) }
+    emit()
+    setToast('Thanks. We will review this post.')
+  },
+
+  blockUser(userId: string, name?: string) {
+    if (!userId || userId === 'me') return
+    if (api.realFeed) void api.blockUser(userId).catch(() => {})
+    // Drop everything from this author out of the current feed.
+    current = { ...current, communityPosts: (current.communityPosts ?? []).filter((e) => e.author !== userId) }
+    emit()
+    setToast(name ? `You won't see posts from ${name}` : 'User blocked')
+  },
+
   cheerMember(name: string) {
     setToast(`You cheered ${name} 👏`)
   },

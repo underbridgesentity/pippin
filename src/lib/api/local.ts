@@ -147,4 +147,10 @@ export const localApi: PippinApi = {
   async sendPasswordReset() {},
   isPasswordRecovery() { return false },
   async completePasswordReset() {},
+
+  // No real community in local mode, so moderation is a no-op.
+  async reportPost() {},
+  async blockUser() {},
+  async unblockUser() {},
+  async listBlocked() { return [] },
 }

@@ -80,6 +80,15 @@ export interface PippinApi {
 
   /** fire-and-forget welcome email to the signed-in user (idempotent server-side) */
   sendWelcomeEmail(): Promise<void>
+
+  // ── moderation (App Store Guideline 1.2) ──
+  /** flag a community post for review */
+  reportPost(postId: string, reason?: string): Promise<void>
+  /** hide a user's content from the signed-in user */
+  blockUser(userId: string): Promise<void>
+  unblockUser(userId: string): Promise<void>
+  /** ids of users the signed-in user has blocked */
+  listBlocked(): Promise<string[]>
 }
 
 export class ApiError extends Error {

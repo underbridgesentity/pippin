@@ -204,6 +204,36 @@ create policy "delete own comments"
 
 create index if not exists post_comments_post_idx on public.post_comments (post_id, created_at);
 
+-- ── post reports (moderation queue for user-generated content) ───────────────
+create table if not exists public.post_reports (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references public.posts(id) on delete cascade,
+  reporter uuid not null references public.profiles(id) on delete cascade,
+  reason text,
+  created_at timestamptz not null default now()
+);
+
+alter table public.post_reports enable row level security;
+
+drop policy if exists "create own reports" on public.post_reports;
+create policy "create own reports"
+  on public.post_reports for insert to authenticated with check (auth.uid() = reporter);
+
+-- ── blocks (hide a blocked user's content from the blocker) ───────────────────
+create table if not exists public.blocks (
+  blocker uuid not null references public.profiles(id) on delete cascade,
+  blocked uuid not null references public.profiles(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  primary key (blocker, blocked)
+);
+
+alter table public.blocks enable row level security;
+
+drop policy if exists "manage own blocks" on public.blocks;
+create policy "manage own blocks"
+  on public.blocks for all to authenticated
+  using (auth.uid() = blocker) with check (auth.uid() = blocker);
+
 -- ── post photos (public storage bucket) ─────────────────────────────────────
 insert into storage.buckets (id, name, public)
 values ('post-photos', 'post-photos', true)
