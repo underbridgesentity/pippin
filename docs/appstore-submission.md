@@ -112,18 +112,31 @@ This is not a medical app; calorie values are AI estimates and guidance only.
 
 ## 4. Screenshots
 
-Apple requires **6.7-inch** (1290 x 2796) and accepts **6.9-inch** (1320 x 2868). Capture from the
-**iOS Simulator** (iPhone 16 Pro Max) signed in as the demo account, for exact dimensions. Recommended set,
-in order, with caption ideas:
+Apple requires **6.7-inch** (1290 x 2796) and accepts **6.9-inch** (1320 x 2868). Capture each screen from the
+**iOS Simulator** (iPhone 16 Pro Max) signed in as the demo account (`appreview@pippin.co.za`), for crisp,
+exact dimensions, then add the caption over each per the layout spec below.
 
-1. **Home** — "Snap meals. Keep your streak." (calorie ring, streak, XP)
-2. **Meal capture / food log** — "Instant calorie estimates."
-3. **Challenges** — "Join challenges. Earn badges."
-4. **Profile / Pip** — "Grow Pip from seed to legend."
-5. **Squad** — "Stay accountable with friends."
+### The 5 screenshots, in order (screenshot 1 is the most important, it shows in search)
 
-(Reference captures of these screens on the populated demo account are in this session; the four main
-tabs render cleanly and on-brand.)
+| # | Screen | Headline (Bricolage, bold) | Subhead (Hanken) |
+|---|---|---|---|
+| 1 | **Home** (calorie ring, streak, XP) | The fun way to get healthy | Meals, streaks, and steps, all in one tap. |
+| 2 | **Meal capture / food log** | Just snap your meal | Pip estimates the calories in seconds. |
+| 3 | **Challenges** | Take on challenges | Earn badges and brag about it forever. |
+| 4 | **Profile / Pip** | Grow Pip from seed to legend | Every healthy choice levels you up. |
+| 5 | **Squad** | Stronger with your squad | Cheer friends on and climb the leaderboard. |
+
+Alt headline for #1 if you prefer benefit-first: "Your day, counted."
+
+### Layout spec (keep all 5 consistent)
+- **Canvas:** 1290 x 2796 (also export 1320 x 2868 if you want the 6.9" set).
+- **Background:** warm cream `#F1EDE4`. For variety, give #3 and #5 a soft green wash (`#E7F6EC`).
+- **Caption block:** top ~16-20% of the frame, centered. Headline Bricolage Grotesque ~76px `#231E16`;
+  subhead Hanken Grotesk ~36px `#736D60`, one line below.
+- **Device:** the screen capture centered below the caption, in a rounded frame (corner radius ~64px) with a
+  soft diffuse shadow, OR full-bleed and bottom-anchored. Same treatment on every panel.
+- Keep Pip visible on #1 and #4 (he already is). No text over the phone content.
+- Tools: iOS Simulator for the captures, then Figma / Keynote / Fastlane frameit to add the caption frames.
 
 ---
 
