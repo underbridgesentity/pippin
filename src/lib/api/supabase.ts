@@ -390,9 +390,9 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     },
 
     async reportPost(postId, reason) {
-      const me = await uid()
-      if (!me) return
-      await sb.from('post_reports').insert({ post_id: postId, reporter: me, reason: reason ?? null })
+      // The Edge Function records the report (service role) and emails the
+      // moderator so reports never go unseen.
+      await sb.functions.invoke('report-post', { body: { postId, reason: reason ?? null } })
     },
 
     async blockUser(userId) {

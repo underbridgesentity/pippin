@@ -210,14 +210,43 @@ create table if not exists public.post_reports (
   post_id uuid not null references public.posts(id) on delete cascade,
   reporter uuid not null references public.profiles(id) on delete cascade,
   reason text,
+  status text not null default 'open', -- open | actioned | dismissed
   created_at timestamptz not null default now()
 );
+-- for existing installs
+alter table public.post_reports add column if not exists status text not null default 'open';
 
 alter table public.post_reports enable row level security;
 
+-- Reports are written by the report-post Edge Function (service role) and read
+-- only from the dashboard, so no client select policy is granted. The insert
+-- policy stays as defence in depth in case a client ever inserts directly.
 drop policy if exists "create own reports" on public.post_reports;
 create policy "create own reports"
   on public.post_reports for insert to authenticated with check (auth.uid() = reporter);
+
+-- Moderation queue for the dashboard (private schema = NOT exposed to the API).
+-- Query it in the SQL editor: select * from private.report_queue;
+create schema if not exists private;
+create or replace view private.report_queue as
+  select
+    r.id            as report_id,
+    r.created_at,
+    r.status,
+    r.reason,
+    r.post_id,
+    p.text          as post_text,
+    p.photo_url,
+    p.author        as author_id,
+    ap.name         as author_name,
+    r.reporter      as reporter_id,
+    rp.name         as reporter_name,
+    (select count(*) from public.post_reports r2 where r2.post_id = r.post_id) as reports_on_post
+  from public.post_reports r
+  join public.posts p       on p.id = r.post_id
+  left join public.profiles ap on ap.id = p.author
+  left join public.profiles rp on rp.id = r.reporter
+  order by r.created_at desc;
 
 -- ── blocks (hide a blocked user's content from the blocker) ───────────────────
 create table if not exists public.blocks (
