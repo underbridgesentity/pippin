@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2732" height="2732" viewBox="0 0 2732 2732">
+  <rect width="2732" height="2732" fill="#1B1712"/>
+  <g transform="translate(1366 1300) scale(1.6)">
+    <path d="M30 -300 q22 -78 108 -84 q-10 82 -108 84 Z" fill="#3FB56B"/>
+    <path d="M14 -298 q-6 -40 -8 -66" stroke="#3FB56B" stroke-width="16" fill="none" stroke-linecap="round"/>
+    <path d="M0 -300 C 214 -300 324 -168 324 -14 C 324 206 182 336 0 336 C -182 336 -324 206 -324 -14 C -324 -168 -214 -300 0 -300 Z" fill="#2FC36B"/>
+    <path d="M0 -300 C 120 -300 210 -240 260 -150 C 150 -210 -40 -200 -180 -120 C -140 -230 -80 -300 0 -300 Z" fill="#48D585" opacity="0.55"/>
+    <circle cx="-108" cy="6" r="64" fill="#22323C"/>
+    <circle cx="108" cy="6" r="64" fill="#22323C"/>
+    <circle cx="-90" cy="-14" r="21" fill="#fff"/>
+    <circle cx="126" cy="-14" r="21" fill="#fff"/>
+    <circle cx="-196" cy="118" r="48" fill="#FF9FC6" opacity="0.85"/>
+    <circle cx="196" cy="118" r="48" fill="#FF9FC6" opacity="0.85"/>
+    <path d="M-98 156 q98 98 196 0" stroke="#22323C" stroke-width="36" fill="none" stroke-linecap="round"/>
+  </g>
+</svg>
