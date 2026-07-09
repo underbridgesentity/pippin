@@ -6,9 +6,15 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { gradientFor, initialOf } from '../format'
 import { computeWeeklyXp } from '../selectors'
 import { storage } from '../storage'
+import { isNative, PUBLIC_WEB_ORIGIN } from '../platform'
 import type { Account, Comment, Goal, PostType, ReactionKind, UserState } from '../types'
 import type { SeedMember } from '../seed'
 import { ApiError, defaultState, isUserState, PENDING_GOAL_KEY, validateSignup, type CommunityPost, type PippinApi, type FriendProfile, type Friendships, type SocialProvider } from './contract'
+
+// Auth links must reopen on a real https origin. Inside the native webview
+// window.location.origin is capacitor://localhost, which an email link cannot
+// reopen, so native targets the public website instead.
+const authOrigin = () => (isNative ? PUBLIC_WEB_ORIGIN : typeof window !== 'undefined' ? window.location.origin : undefined)
 
 // Only offer social buttons for providers actually enabled in Supabase, set via
 // VITE_AUTH_PROVIDERS (e.g. "google" or "google,apple"). Empty = email only.
@@ -84,7 +90,7 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     async signInWithProvider(provider, opts) {
       // Stash the chosen goal so it survives the OAuth round-trip.
       storage.set<Goal>(PENDING_GOAL_KEY, opts.goal)
-      const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined
+      const redirectTo = authOrigin()
       const { error } = await sb.auth.signInWithOAuth({ provider, options: { redirectTo } })
       if (error) throw new ApiError(error.message)
       return 'redirect'
@@ -129,6 +135,14 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     },
 
     async logOut() {
+      await sb.auth.signOut()
+    },
+
+    async deleteAccount() {
+      // The Edge Function verifies the caller's JWT then uses the service-role
+      // key to erase the auth user, DB rows (cascade), and Storage photos.
+      const { error } = await sb.functions.invoke('delete-account')
+      if (error) throw new ApiError('Could not delete your account. Please try again.')
       await sb.auth.signOut()
     },
 
@@ -370,7 +384,7 @@ export function createSupabaseApi(url: string, anonKey: string): PippinApi {
     async sendPasswordReset(email) {
       // redirectTo lands back on the app; Supabase appends a recovery token in
       // the URL hash, which supabase-js turns into a temporary session.
-      const redirectTo = typeof window !== 'undefined' ? window.location.origin : undefined
+      const redirectTo = authOrigin()
       await sb.auth.resetPasswordForEmail(email.trim(), { redirectTo })
     },
 

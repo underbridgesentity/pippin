@@ -93,6 +93,12 @@ export const localApi: PippinApi = {
     storage.remove(SESSION)
   },
 
+  async deleteAccount(accountId) {
+    saveAccounts(accounts().filter((a) => a.id !== accountId))
+    storage.remove(userKey(accountId))
+    storage.remove(SESSION)
+  },
+
   async loadState(accountId) {
     return storage.get<UserState>(userKey(accountId))
   },

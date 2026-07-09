@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { FOOD_BY_ID, QUICK_ADD_IDS, searchFoods, type Food } from '../lib/foods'
-import { frameFromVideo, dataUrlFromFile, type Frames } from '../lib/image'
+import { frameFromVideo, dataUrlFromFile, framesFromDataUrl, type Frames } from '../lib/image'
+import { isNative } from '../lib/platform'
 import { mealTypeFor } from '../lib/selectors'
 import { num } from '../lib/format'
 import { actions } from '../lib/store'
@@ -171,6 +172,12 @@ function Viewfinder({
   const live = status === 'live'
 
   useEffect(() => {
+    // Native uses the system camera UI (triggered on tap), not an inline web
+    // viewfinder, so skip getUserMedia and show the tap-to-snap placeholder.
+    if (isNative) {
+      setStatus('off')
+      return
+    }
     let stream: MediaStream | null = null
     let cancelled = false
     async function start() {
@@ -198,7 +205,23 @@ function Viewfinder({
     }
   }, [])
 
+  // Native capture via the system camera / photo library.
+  async function nativeCapture(from: 'camera' | 'photos') {
+    try {
+      const { Camera, CameraSource, CameraResultType } = await import('@capacitor/camera')
+      const photo = await Camera.getPhoto({
+        quality: 90,
+        resultType: CameraResultType.DataUrl,
+        source: from === 'camera' ? CameraSource.Camera : CameraSource.Photos,
+      })
+      if (photo.dataUrl) onCaptured(await framesFromDataUrl(photo.dataUrl))
+    } catch {
+      /* user cancelled or denied permission: stay on the capture screen */
+    }
+  }
+
   function shoot() {
+    if (isNative) { void nativeCapture('camera'); return }
     if (live && videoRef.current) {
       try {
         onCaptured(frameFromVideo(videoRef.current))
@@ -207,6 +230,11 @@ function Viewfinder({
         /* fall through to file picker */
       }
     }
+    fileRef.current?.click()
+  }
+
+  function pickPhoto() {
+    if (isNative) { void nativeCapture('photos'); return }
     fileRef.current?.click()
   }
 
@@ -254,7 +282,7 @@ function Viewfinder({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, padding: '0 0 46px' }}>
-        <button onClick={() => fileRef.current?.click()} aria-label="Choose photo" style={squareBtn}>
+        <button onClick={pickPhoto} aria-label="Choose photo" style={squareBtn}>
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="14" rx="3" /><path d="M3 16l5-4 4 3 4-4 5 4" /></svg>
         </button>
         <button onClick={shoot} aria-label="Capture" style={{ width: 80, height: 80, borderRadius: '50%', background: '#fff', border: '5px solid rgba(255,255,255,.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

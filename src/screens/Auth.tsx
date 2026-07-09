@@ -4,8 +4,25 @@ import { Mascot } from '../components/Mascot'
 import { PipBubble } from '../components/PipBubble'
 import { actions, type ApiError } from '../lib/store'
 import { api, type SocialProvider } from '../lib/api'
+import { isNative, PUBLIC_WEB_ORIGIN } from '../lib/platform'
 import { T, card, inset } from '../lib/theme'
 import type { Goal } from '../lib/types'
+
+// Legal pages are static HTML. On web a plain link is fine; inside the native
+// webview we open them in an in-app browser so the user can return to signup.
+function LegalLink({ path, children }: { path: string; children: React.ReactNode }) {
+  if (isNative) {
+    return (
+      <button
+        onClick={() => { void import('@capacitor/browser').then(({ Browser }) => Browser.open({ url: PUBLIC_WEB_ORIGIN + path })) }}
+        style={{ color: T.dim, fontWeight: 800, background: 'none', border: 'none', padding: 0, cursor: 'pointer', font: 'inherit' }}
+      >
+        {children}
+      </button>
+    )
+  }
+  return <a href={path} style={{ color: T.dim, fontWeight: 800 }}>{children}</a>
+}
 
 const GRAPE = T.accent
 const CTA = ['Get started', 'Continue', 'Continue', 'Create account']
@@ -191,8 +208,8 @@ export function Auth({ initialView = 'signup', onExit }: { initialView?: 'signup
       {step === 3 && (
         <div style={{ textAlign: 'center', marginTop: 12, fontFamily: T.body, fontWeight: 600, fontSize: 12, color: T.faint, lineHeight: 1.5 }}>
           By creating an account you agree to our{' '}
-          <a href="/terms.html" style={{ color: T.dim, fontWeight: 800 }}>Terms</a> and{' '}
-          <a href="/privacy.html" style={{ color: T.dim, fontWeight: 800 }}>Privacy Policy</a>.
+          <LegalLink path="/terms.html">Terms</LegalLink> and{' '}
+          <LegalLink path="/privacy.html">Privacy Policy</LegalLink>.
         </div>
       )}
 

@@ -18,7 +18,11 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
   const { data } = useStore()
   const d = useDerived()
   const [tab, setTab] = useState<Tab>('Leaderboard')
-  const [scope, setScope] = useState<'everyone' | 'friends'>('everyone')
+  // On a real backend there is no seeded "everyone" pool, so the leaderboard is
+  // friends-only (you until you add friends) and Circles (no real backend yet)
+  // is hidden. Local/demo mode keeps the full seeded experience.
+  const [scope, setScope] = useState<'everyone' | 'friends'>(api.realFriends ? 'friends' : 'everyone')
+  const visibleTabs = TABS.filter((t) => t !== 'Circles' || !api.realFriends)
   if (!d || !data) return null
 
   const board = scope === 'friends' ? d.friendsLeaderboard : d.leaderboard
@@ -34,21 +38,23 @@ export function Squad({ onOpenMember, onOpenCircle, onCheckIn }: { onOpenMember:
 
       {/* main tabs */}
       <div style={{ display: 'flex', background: T.glass, border: `1px solid ${T.lineSoft}`, borderRadius: 16, padding: 4, marginBottom: 18 }}>
-        {TABS.map((t) => (
+        {visibleTabs.map((t) => (
           <button key={t} onClick={() => setTab(t)} style={{ flex: 1, textAlign: 'center', background: tab === t ? T.accent : 'transparent', borderRadius: 13, padding: 9, fontFamily: T.display, fontWeight: 600, fontSize: 14, color: tab === t ? T.ink : T.dim, border: 'none', cursor: 'pointer' }}>{t}</button>
         ))}
       </div>
 
       {tab === 'Leaderboard' && (
         <>
-          {/* scope toggle */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
-            {(['everyone', 'friends'] as const).map((s) => (
-              <button key={s} onClick={() => setScope(s)} style={{ flex: 1, background: scope === s ? T.accent : T.glass, color: scope === s ? T.ink : T.dim, border: scope === s ? 'none' : `1px solid ${T.line}`, borderRadius: 14, padding: '9px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
-                {s === 'everyone' ? '🌍 Everyone' : '🤝 My friends'}
-              </button>
-            ))}
-          </div>
+          {/* scope toggle (seeded "everyone" pool only exists in demo mode) */}
+          {!api.realFriends && (
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {(['everyone', 'friends'] as const).map((s) => (
+                <button key={s} onClick={() => setScope(s)} style={{ flex: 1, background: scope === s ? T.accent : T.glass, color: scope === s ? T.ink : T.dim, border: scope === s ? 'none' : `1px solid ${T.line}`, borderRadius: 14, padding: '9px', fontFamily: T.display, fontWeight: 600, fontSize: 13, cursor: 'pointer' }}>
+                  {s === 'everyone' ? '🌍 Everyone' : '🤝 My friends'}
+                </button>
+              ))}
+            </div>
+          )}
 
           {scope === 'friends' && d.friendCount === 0 ? (
             <Empty emoji="🤝" title="No friends yet" body="Add friends to race up a private leaderboard and keep each other accountable." cta="Find friends" onCta={() => setTab('Friends')} />

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { ProgressBar } from '../components/ProgressBar'
 import { useDerived } from '../lib/hooks'
 import { actions } from '../lib/store'
+import { api } from '../lib/api'
 import { CHALLENGES, TEAM_CHALLENGE } from '../lib/seed'
 import { num } from '../lib/format'
 import { T, card, softTile } from '../lib/theme'
@@ -28,7 +29,8 @@ export function Quests() {
       <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 30, color: T.text, marginBottom: 4 }}>Challenges</div>
       <div style={{ fontFamily: T.body, fontWeight: 700, fontSize: 14, color: T.dim, marginBottom: 18 }}>Win them together. Brag about it forever.</div>
 
-      {/* team challenge */}
+      {/* team challenge (seeded demo only; real users join real challenges below) */}
+      {!api.realFeed && (
       <div style={{ ...card, position: 'relative', padding: 18, marginBottom: 18, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', right: -30, top: -30, width: 120, height: 120, borderRadius: '50%', background: T.accentDim }} />
         <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -50,6 +52,7 @@ export function Quests() {
           </div>
         </div>
       </div>
+      )}
 
       {/* your daily goals */}
       <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 19, color: T.text, marginBottom: 12, paddingLeft: 2 }}>Your daily goals</div>
@@ -110,7 +113,7 @@ export function Quests() {
                 <div style={{ fontFamily: T.display, fontWeight: 600, fontSize: 17, color: T.text }}>{c.name}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 3 }}>
                   <span style={{ fontFamily: T.body, fontWeight: 800, fontSize: 11, color: T.ink, background: c.color, padding: '3px 9px', borderRadius: 12 }}>{c.cat}</span>
-                  <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim }}>{c.people} joined</span>
+                  {!api.realFeed && <span style={{ fontFamily: T.body, fontWeight: 700, fontSize: 12, color: T.dim }}>{c.people} joined</span>}
                 </div>
               </div>
             </div>

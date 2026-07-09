@@ -33,6 +33,22 @@ export function frameFromVideo(video: HTMLVideoElement): Frames {
   return frames(video, video.videoWidth || STORE_MAX, video.videoHeight || STORE_MAX)
 }
 
+/** Build both frames from a data URL (native camera returns a full-res dataUrl). */
+export function framesFromDataUrl(dataUrl: string): Promise<Frames> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      try {
+        resolve(frames(img, img.naturalWidth, img.naturalHeight))
+      } catch (e) {
+        reject(e)
+      }
+    }
+    img.onerror = () => reject(new Error('Could not read image'))
+    img.src = dataUrl
+  })
+}
+
 export function dataUrlFromFile(file: File): Promise<Frames> {
   return new Promise((resolve, reject) => {
     const url = URL.createObjectURL(file)

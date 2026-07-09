@@ -12,7 +12,8 @@ import { Quests } from './screens/Quests'
 import { Squad } from './screens/Squad'
 import { Profile } from './screens/Profile'
 import { Landing } from './screens/Landing'
-import { ResetPassword } from './screens/Auth'
+import { Auth, ResetPassword } from './screens/Auth'
+import { isNative } from './lib/platform'
 import { Welcome } from './screens/Welcome'
 import { Capture } from './screens/Capture'
 import { AddActivity } from './screens/AddActivity'
@@ -82,7 +83,8 @@ function Root() {
 
   if (status === 'loading') return <CenterFrame><Splash /></CenterFrame>
   if (passwordRecovery) return <CenterFrame><ResetPassword /></CenterFrame>
-  if (!account || !data) return <Landing />
+  // The marketing Landing is web-only. Native launches straight into onboarding.
+  if (!account || !data) return isNative ? <CenterFrame><Auth initialView="signup" /></CenterFrame> : <Landing />
   if (!data.welcomed) return <CenterFrame><Welcome name={firstName(account.name)} /></CenterFrame>
 
   const openPost = postId && data ? findDecoratedPost(data, postId, communityPosts ?? []) : null

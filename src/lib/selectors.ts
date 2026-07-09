@@ -3,7 +3,14 @@
 // here from real logged data. No screen reads raw counters.
 
 import { dayKey, num, todayKey } from './format'
+import { api } from './api'
 import { CHALLENGE_BY_ID, CIRCLES, MEMBER_BY_ID, MEMBERS, circleFeed, communityFeed, type Circle, type SeedMember } from './seed'
+
+// On a real backend the feed/circles are populated by actual people, so the
+// seeded personas are suppressed (showing invented users to real members reads
+// as deceptive). Local/demo mode keeps them so the app never looks empty.
+const ambientFeed = (now: number) => (api.realFeed ? [] : communityFeed(now))
+const ambientCircleFeed = (circleId: string, now: number) => (api.realFeed ? [] : circleFeed(circleId, now))
 import {
   BADGES,
   computeStreak,
@@ -52,23 +59,23 @@ export function decorateEntry(entry: FeedEntry, s: UserState): DecoratedFeed {
 export function buildFeed(s: UserState, communityPosts: FeedEntry[] = [], now = Date.now()): DecoratedFeed[] {
   const hasReal = communityPosts.length > 0
   const local = s.feed.filter((e) => !e.circleId && (!hasReal || e.kind !== 'post'))
-  const merged = [...communityPosts, ...local, ...communityFeed(now)].sort((a, b) => b.at - a.at)
+  const merged = [...communityPosts, ...local, ...ambientFeed(now)].sort((a, b) => b.at - a.at)
   return merged.map((e) => decorateEntry(e, s))
 }
 
 /** A single circle's feed: the user's posts to that circle + seeded circle posts. */
 export function buildCircleFeed(s: UserState, circleId: string, now = Date.now()): DecoratedFeed[] {
   const mine = s.feed.filter((e) => e.circleId === circleId)
-  const merged = [...mine, ...circleFeed(circleId, now)].sort((a, b) => b.at - a.at)
+  const merged = [...mine, ...ambientCircleFeed(circleId, now)].sort((a, b) => b.at - a.at)
   return merged.map((e) => decorateEntry(e, s))
 }
 
 /** Resolve any post by id across the global feed, community and every circle. */
 export function findDecoratedPost(s: UserState, id: string, communityPosts: FeedEntry[] = [], now = Date.now()): DecoratedFeed | null {
-  let entry = communityPosts.find((e) => e.id === id) ?? s.feed.find((e) => e.id === id) ?? communityFeed(now).find((e) => e.id === id)
+  let entry = communityPosts.find((e) => e.id === id) ?? s.feed.find((e) => e.id === id) ?? ambientFeed(now).find((e) => e.id === id)
   if (!entry) {
     for (const c of CIRCLES) {
-      const f = circleFeed(c.id, now).find((e) => e.id === id)
+      const f = ambientCircleFeed(c.id, now).find((e) => e.id === id)
       if (f) {
         entry = f
         break

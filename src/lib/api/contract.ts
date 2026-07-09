@@ -47,6 +47,8 @@ export interface PippinApi {
   /** Resolves to an Account (local) or 'redirect' when the page navigates to the provider (Supabase OAuth). */
   signInWithProvider(provider: SocialProvider, opts: { goal: Goal }): Promise<Account | 'redirect'>
   logOut(): Promise<void>
+  /** permanently delete the signed-in account and all its data (App Store 5.1.1v / POPIA erasure) */
+  deleteAccount(accountId: string): Promise<void>
   loadState(accountId: string): Promise<UserState | null>
   saveState(accountId: string, state: UserState): Promise<void>
   updateAccount(accountId: string, patch: Partial<Pick<Account, 'name' | 'avatar'>>): Promise<Account | null>

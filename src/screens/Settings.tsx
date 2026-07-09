@@ -4,7 +4,7 @@ import { GOAL_OPTIONS } from '../data'
 import { actions, useStore } from '../lib/store'
 import { ACTIVITY_OPTIONS, bodyComplete, recommendedCalories } from '../lib/nutrition'
 import { num } from '../lib/format'
-import { T, card, eyebrow, softTile } from '../lib/theme'
+import { T, card, eyebrow, softTile, hexA } from '../lib/theme'
 import type { ActivityLevel, Body, Goal, Sex } from '../lib/types'
 
 const SEX_OPTIONS: { id: Sex; label: string }[] = [
@@ -135,8 +135,64 @@ export function Settings({ open, onClose }: { open: boolean; onClose: () => void
         >
           Log out
         </button>
+
+        <DangerZone onClose={onClose} />
       </div>
     </Sheet>
+  )
+}
+
+// Permanent account deletion with a two-step confirm (App Store 5.1.1v / POPIA).
+function DangerZone({ onClose }: { onClose: () => void }) {
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+
+  async function remove() {
+    setBusy(true)
+    const ok = await actions.deleteAccount()
+    // On success the store clears the account and the app returns to Landing/onboarding.
+    if (!ok) { setBusy(false); setConfirming(false); actions.toast('Could not delete your account. Please try again.') }
+    else onClose()
+  }
+
+  return (
+    <div style={{ marginTop: 28 }}>
+      <div style={{ ...eyebrow, letterSpacing: '.4px', padding: '0 4px 8px', color: T.rose }}>Danger zone</div>
+      {!confirming ? (
+        <button
+          onClick={() => setConfirming(true)}
+          className="pressable"
+          style={{ width: '100%', background: 'transparent', color: T.rose, border: `1px solid ${hexA(T.rose, 0.4)}`, borderRadius: T.r.pill, padding: 15, fontFamily: T.display, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+        >
+          Delete account
+        </button>
+      ) : (
+        <div style={{ ...card, padding: 16, border: `1px solid ${hexA(T.rose, 0.35)}` }}>
+          <div style={{ fontFamily: T.display, fontWeight: 700, fontSize: 16, color: T.text, marginBottom: 6 }}>Delete your account?</div>
+          <div style={{ fontFamily: T.body, fontWeight: 600, fontSize: 13.5, color: T.dim, lineHeight: 1.5, marginBottom: 14 }}>
+            This permanently erases your profile, meals, posts, photos and friendships. It cannot be undone.
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button
+              onClick={() => setConfirming(false)}
+              disabled={busy}
+              className="pressable"
+              style={{ flex: 1, background: T.glass, color: T.text, border: `1px solid ${T.line}`, borderRadius: T.r.pill, padding: 13, fontFamily: T.display, fontWeight: 600, fontSize: 15, cursor: 'pointer' }}
+            >
+              Keep my account
+            </button>
+            <button
+              onClick={remove}
+              disabled={busy}
+              className="pressable"
+              style={{ flex: 1, background: T.rose, color: '#fff', border: 'none', borderRadius: T.r.pill, padding: 13, fontFamily: T.display, fontWeight: 600, fontSize: 15, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.7 : 1 }}
+            >
+              {busy ? 'Deleting…' : 'Delete permanently'}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 

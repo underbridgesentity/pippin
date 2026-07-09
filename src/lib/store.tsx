@@ -11,6 +11,7 @@ import { CIRCLE_BADGE_BY_ID, earnedCircleBadges } from './selectors'
 import { CHALLENGE_BY_ID, CIRCLE_BY_ID, MEMBER_BY_ID, MEMBERS, SUPPORT_LINES, type SeedMember } from './seed'
 import { dayKey, todayKey } from './format'
 import { recommendedCalories } from './nutrition'
+import { ensureStreakReminder, cancelStreakReminder } from './notifications'
 import type {
   Account,
   ActivityKind,
@@ -106,6 +107,7 @@ async function init() {
       current = { status: 'ready', account, data, community: null, toast: null, celebration: null }
       emit()
       refreshCommunity(account.id); refreshFeed()
+      void ensureStreakReminder() // native-only daily nudge; no-op on web
       return
     }
   } catch {
@@ -181,6 +183,8 @@ function refreshFeed() {
  * backend, genuine cheers from real people arrive here instead.
  */
 function scheduleSupport(feedId: string) {
+  // On a real backend, cheers come from real people, never fabricated ones.
+  if (api.realFeed) return
   setTimeout(() => {
     const { data, account } = current
     if (!data || !account) return
@@ -202,6 +206,8 @@ function scheduleSupport(feedId: string) {
 
 /** Your accountability buddy checks in shortly after you do (simulated locally). */
 function scheduleBuddyResponse() {
+  // Simulated buddy only exists in local/demo mode.
+  if (api.realFriends) return
   setTimeout(() => {
     const { data, account } = current
     if (!data || !data.buddyId || !account) return
@@ -347,6 +353,7 @@ export const actions = {
     current = { ...current, data: next }
     if (account) void api.saveState(account.id, next)
     emit()
+    void ensureStreakReminder() // ask for notification permission once onboarded
     setToast('Welcome to Pippin! 🎉')
   },
 
@@ -399,8 +406,26 @@ export const actions = {
 
   logOut() {
     void api.logOut()
+    void cancelStreakReminder()
     current = { ...current, account: null, data: null, community: null, toast: null }
     emit()
+  },
+
+  async deleteAccount(): Promise<boolean> {
+    const { account } = current
+    if (!account) return false
+    try {
+      await api.deleteAccount(account.id)
+      return true
+    } catch {
+      return false
+    } finally {
+      // Always drop the local session, even if the server call failed, so a
+      // user who asked to leave is never left signed in.
+      void cancelStreakReminder()
+      current = { ...current, account: null, data: null, community: null, toast: null }
+      emit()
+    }
   },
 
   logMeal(input: { items: LoggedFood[]; type: MealType; photo?: string }) {
