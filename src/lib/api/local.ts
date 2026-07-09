@@ -28,7 +28,8 @@ function saveAccounts(list: Account[]): void {
 
 export const localApi: PippinApi = {
   mode: 'local',
-  socialProviders: ['google', 'apple'],
+  // Email-only for now; Google/Apple sign-in deferred.
+  socialProviders: [],
 
   async getSession() {
     const id = storage.get<string>(SESSION)
