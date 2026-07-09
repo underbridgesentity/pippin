@@ -148,15 +148,15 @@ Because these need your Apple ID, 2FA, legal acceptance, or code-signing on your
 
 ---
 
-## 7. ONE remaining code task before submit: UGC moderation (Guideline 1.2)
+## 7. UGC moderation (Guideline 1.2) — BUILT
 
-Pippin has a community feed and friends (user-generated content + social). Apple **requires** apps with UGC to provide:
-- a way to **report** objectionable content,
-- a way to **block** abusive users,
-- filtering / a stated moderation approach,
-- published contact info (done: support page + email).
+Pippin has a community feed + friends (user-generated content), so Apple requires report + block. This is now implemented:
+- **Report post** and **Block {user}** in the post thread (tap a post → options menu).
+- Reporting flags the post (post_reports table) and hides it from the reporter.
+- Blocking hides all of that user's posts from you (blocks table + feed filtering).
+- Support contact + EULA are covered by the support page and privacy policy.
 
-Pippin does not have **report** or **block** yet. This is the most likely rejection reason if we submit as-is.
-Recommended: add a "Report post" action and a "Block user" action (block hides that user's posts/comments and
-removes them from your view). This is a focused, buildable change. Do this before submitting.
+**Action required from you:** run `supabase/schema.sql` again in the Supabase SQL editor to create the
+`post_reports` and `blocks` tables. Until then, report/block work in the UI but do not persist across sessions.
+After running it, a quick 2-account test confirms a blocked user's posts stay hidden after reload.
 ```
