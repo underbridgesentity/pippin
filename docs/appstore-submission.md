@@ -3,6 +3,15 @@
 Everything to paste into App Store Connect (ASC) and the exact steps only you can do.
 Bundle ID: **za.co.pippin.app** · Version **1.0.0** · Build **1**
 
+> **STATUS (2026-07-09): the ASC setup is DONE.** App ID registered; app record created as
+> **"Pippin: Healthy Habits"** (bare "Pippin" was taken; the home-screen label stays "Pippin"),
+> Apple ID 6789300144, SKU pippin-ios-001. Saved: all v1.0 metadata below, subtitle, categories,
+> age rating 13+, medical-device declaration (No), App Privacy (published), App Review info
+> (demo account + notes + contact), pricing Free in 175 regions.
+> **Remaining:** screenshots, the Xcode build upload, the EU Digital Services Act declaration
+> (App Information > Digital Services Act > Set Up, legal trader-status attestation, owner only),
+> then "Add for Review".
+
 ---
 
 ## 0. Reviewer demo account (solves Guideline 2.1)
