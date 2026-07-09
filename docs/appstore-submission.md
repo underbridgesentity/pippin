@@ -148,15 +148,18 @@ Because these need your Apple ID, 2FA, legal acceptance, or code-signing on your
 
 ---
 
-## 7. UGC moderation (Guideline 1.2) — BUILT
+## 7. UGC moderation (Guideline 1.2) — BUILT + LIVE
 
-Pippin has a community feed + friends (user-generated content), so Apple requires report + block. This is now implemented:
+Pippin has a community feed + friends (user-generated content), so Apple requires report + block. Implemented and verified live end to end:
 - **Report post** and **Block {user}** in the post thread (tap a post → options menu).
-- Reporting flags the post (post_reports table) and hides it from the reporter.
-- Blocking hides all of that user's posts from you (blocks table + feed filtering).
-- Support contact + EULA are covered by the support page and privacy policy.
+- Reporting records the post (post_reports) and emails you (info@underbridges.co.za) via the `report-post` Edge Function, then hides it from the reporter.
+- Blocking hides all of that user's posts from you (blocks table + feed filtering); persists across sessions.
+- Support contact + EULA covered by the support page and privacy policy.
 
-**Action required from you:** run `supabase/schema.sql` again in the Supabase SQL editor to create the
-`post_reports` and `blocks` tables. Until then, report/block work in the UI but do not persist across sessions.
-After running it, a quick 2-account test confirms a blocked user's posts stay hidden after reload.
+**Schema applied** (post_reports + status, blocks, and the `private.report_queue` view are live). Verified:
+Bea reported and blocked Alex, the report showed in `private.report_queue`, the email fired, and the block
+kept Alex's post hidden after reload. Test data cleaned up.
+
+**Moderating reports:** run `select * from private.report_queue;` in the Supabase SQL editor. Remove a post by
+deleting its row (reports cascade away); ban a user under Authentication > Users. No custom admin app needed.
 ```
