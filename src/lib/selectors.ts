@@ -197,7 +197,10 @@ export function derive(account: Account, s: UserState, now = Date.now(), members
     Object.values(s.comments).flat().filter((com) => com.author === 'me').length
   const kudosReceived = s.kudosReceived
 
-  const friends = s.friends.map((id) => MEMBER_BY_ID[id]).filter((m): m is SeedMember => !!m)
+  // Friend ids resolve against the live member pool first (real profiles from
+  // the backend), then the seed personas (local/demo mode).
+  const memberById = new Map(members.map((m) => [m.id, m]))
+  const friends = s.friends.map((id) => memberById.get(id) ?? MEMBER_BY_ID[id]).filter((m): m is SeedMember => !!m)
   const friendsLeaderboard = buildLeaderboard(account, weeklyXp, friends)
 
   const earnedCircleIds = new Set(earnedCircleBadges(s))

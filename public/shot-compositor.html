@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Pippin screenshot compositor (dev tool)</title>
+<meta name="robots" content="noindex" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700&family=Hanken+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+<style>body{font-family:sans-serif;padding:20px}img{width:120px;border:1px solid #ccc;margin:4px}</style>
+</head>
+<body>
+<h3>Compositor</h3>
+<div id="log">idle</div>
+<div id="out"></div>
+<script>
+const W = 1320, H = 2868;
+const SAVE = 'http://127.0.0.1:8787';
+
+const SHOTS = [
+  { file: 'home.png',       out: '1-home.png',       bg: '#F1EDE4', head: 'The fun way to get healthy',     sub: 'Meals, streaks, and steps, all in one tap.' },
+  { file: 'meal.png',       out: '2-meal.png',       bg: '#F1EDE4', head: 'Just snap your meal',            sub: 'Pip estimates the calories in seconds.' },
+  { file: 'challenges.png', out: '3-challenges.png', bg: '#E7F6EC', head: 'Take on challenges',             sub: 'Earn badges and brag about it forever.' },
+  { file: 'profile.png',    out: '4-profile.png',    bg: '#F1EDE4', head: 'Grow Pip from seed to legend',   sub: 'Every healthy choice levels you up.' },
+  { file: 'squad.png',      out: '5-squad.png',      bg: '#E7F6EC', head: 'Stronger with your squad',       sub: 'Cheer friends on and climb the leaderboard.' },
+  { file: 'celebration.png', out: '6-celebration.png', bg: '#F1EDE4', head: 'Celebrate every win',           sub: 'Badges, streaks, and a very proud Pip.' },
+];
+
+function roundedPath(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+async function compose(spec) {
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  await new Promise((res, rej) => { img.onload = res; img.onerror = () => rej(new Error('load fail ' + spec.file)); img.src = SAVE + '/' + spec.file; });
+
+  const c = document.createElement('canvas');
+  c.width = W; c.height = H;
+  const g = c.getContext('2d');
+
+  // background
+  g.fillStyle = spec.bg;
+  g.fillRect(0, 0, W, H);
+
+  // caption block (top ~17%)
+  g.fillStyle = '#231E16';
+  g.font = '700 76px "Bricolage Grotesque"';
+  g.textAlign = 'center';
+  g.fillText(spec.head, W / 2, 250);
+  g.fillStyle = '#736D60';
+  g.font = '600 40px "Hanken Grotesk"';
+  g.fillText(spec.sub, W / 2, 330);
+
+  // device capture: rounded frame with soft shadow, bottom-anchored
+  const top = 430;
+  const availH = H - top; // bleed off the bottom edge
+  const scale = Math.min((W - 160) / img.width, availH / img.height);
+  const dw = img.width * scale, dh = img.height * scale;
+  const dx = (W - dw) / 2, dy = top;
+
+  g.save();
+  g.shadowColor = 'rgba(48,38,22,0.28)';
+  g.shadowBlur = 70;
+  g.shadowOffsetY = 26;
+  roundedPath(g, dx, dy, dw, dh, 64);
+  g.fillStyle = '#fff';
+  g.fill();
+  g.restore();
+
+  g.save();
+  roundedPath(g, dx, dy, dw, dh, 64);
+  g.clip();
+  g.drawImage(img, dx, dy, dw, dh);
+  g.restore();
+
+  const blob = await new Promise((res) => c.toBlob(res, 'image/png'));
+  await fetch(SAVE + '/save?name=' + spec.out, { method: 'POST', body: blob });
+
+  const thumb = document.createElement('img');
+  thumb.src = c.toDataURL('image/jpeg', 0.4);
+  document.getElementById('out').appendChild(thumb);
+  return spec.out;
+}
+
+window.run = async function () {
+  const log = document.getElementById('log');
+  try {
+    await document.fonts.load('700 76px "Bricolage Grotesque"');
+    await document.fonts.load('600 40px "Hanken Grotesk"');
+    await document.fonts.ready;
+    const done = [];
+    for (const s of SHOTS) done.push(await compose(s));
+    log.textContent = 'DONE: ' + done.join(', ');
+    return log.textContent;
+  } catch (e) {
+    log.textContent = 'ERROR: ' + e.message;
+    return log.textContent;
+  }
+};
+</script>
+</body>
+</html>

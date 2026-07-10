@@ -125,6 +125,27 @@ function refreshCommunity(excludeId: string) {
       emit()
     })
     .catch(() => {})
+  refreshFriends()
+}
+
+// On a real backend the server's accepted friendships are the source of truth
+// for who counts as a friend (leaderboard scope, cheer targets). Sync them into
+// the persisted friends list so derive() sees them.
+function refreshFriends() {
+  if (!api.realFriends) return
+  api
+    .listFriendships()
+    .then((f) => {
+      const { data, account } = current
+      if (!data || !account) return
+      const ids = f.friends.map((p) => p.id).sort()
+      if (JSON.stringify(ids) === JSON.stringify([...data.friends].sort())) return
+      const next = { ...data, friends: ids }
+      current = { ...current, data: next }
+      emit()
+      void api.saveState(account.id, next)
+    })
+    .catch(() => {})
 }
 
 // Map a real community post to the FeedEntry shape the feed already renders.
@@ -788,6 +809,11 @@ export const actions = {
 
   toast(message: string) {
     setToast(message)
+  },
+
+  /** re-sync server friendships into the friends list (leaderboard scope) */
+  refreshFriends() {
+    refreshFriends()
   },
 }
 

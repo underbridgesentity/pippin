@@ -203,6 +203,7 @@ function RealFriends() {
     await api.respondToRequest(p.id, accept)
     actions.toast(accept ? `You're now friends with ${p.name} 🤝` : 'Request declined')
     refresh()
+    actions.refreshFriends() // keep the leaderboard's friend scope in sync
   }
   function invite() {
     if (!username) return actions.toast('Pick a username first')

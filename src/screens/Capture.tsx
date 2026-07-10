@@ -124,7 +124,9 @@ export function Capture({ onClose }: { onClose: () => void }) {
   }
 
   return (
-    <div data-screen-label="Meal Capture" style={{ position: 'absolute', inset: 0, zIndex: 95, background: T.bg, display: 'flex', flexDirection: 'column' }}>
+    // Camera stages sit on a dark surface (their text and controls are light);
+    // the manual food log is a regular light screen.
+    <div data-screen-label="Meal Capture" style={{ position: 'absolute', inset: 0, zIndex: 95, background: stage === 'log' ? T.bg : '#1B1712', display: 'flex', flexDirection: 'column' }}>
       {stage === 'view' && (
         <Viewfinder
           onClose={onClose}
